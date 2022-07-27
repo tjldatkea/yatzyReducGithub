@@ -65,6 +65,15 @@
     .show {
       display: block;
     }
+
+    .prevent-select {
+      -webkit-user-select: none;
+      /* Safari */
+      -ms-user-select: none;
+      /* IE 10 and IE 11 */
+      user-select: none;
+      /* Standard syntax */
+    }
   </style>
   <script>
 
@@ -94,45 +103,39 @@
     // Kan jeg få F1 og de andre F taster til kun at virke i spillet?
     // evt skift af farve ved navn 
 
-
-    // Senere:
-    // Husk at fjerne vores navne inden upload, se efter: Skal fjernes inden upload
-
-    // Prøv at lave Ticket to Ride på samme måde som dette spil og tilføj aktier til US kortet
-
-    var holdDieOne = holdDieTwo = holdDieThree = holdDieFour = holdDieFive = holdDieSix = false;
-    var d1 = d2 = d3 = d4 = d5 = d6 = 0;
-    var diceArray; // [d1,d2,d3,d4,d5,d6] 
-    var resultArray; // [nEnere,nToere,nTreere,nFireere,nFemere,nSeksere]
-    var aktivSpillerNr = 0;
-    var kastNr = 0;
-    var antalSpillere = 0; //2;
-    var knapperSkalForsvindeEfterIndtastning = true;
-    var spillerenHarIndtastetPoint = false;
-    var antalSlagPrSpiller = 3;
-    var resterendeSlag = antalSlagPrSpiller;
-    var visTotal = false;
-    var shiftPressed = false;
-    var dato = new Date();
-    var detAktuelleSekund = 0; // skal måske hedde det gemte sekund i stedet
-    var spillerErVedAtRetteFejlPaaNotesblok = false;
-    var spillerErVedAtRetteNavneOgAntalSpillere = false;
-    var PogT = false; // Skal fjernes inden upload
-    var punktNavneListe = ["Enere", "Toere", "Treere", "Fireere", "Femere", "Seksere", "Bonus", "Par", "To Par", "Tre Par", "Tre Ens", "Fire Ens", "To Gange Tre Ens", "Lille", "Stor", "Royal", "Hus", "Chancen", "Yatzy", ""]; // "I plus eller minus"
-    var visGenvejstaster = false;
-    var shiftKnap = "a"; // "shift", når den knap kan bruges
-    var altKnap = "z"; // "alt", når den knap kan bruges
-    var gameHasBegun = false;
-    var altPressed = false;
+    let holdDieOne = holdDieTwo = holdDieThree = holdDieFour = holdDieFive = holdDieSix = false;
+    let d1 = d2 = d3 = d4 = d5 = d6 = 0;
+    let diceArray; // [d1,d2,d3,d4,d5,d6] 
+    let resultArray; // [nEnere,nToere,nTreere,nFireere,nFemere,nSeksere]
+    let aktivSpillerNr = 0;
+    let kastNr = 0;
+    let antalSpillere = 0; //2;
+    let knapperSkalForsvindeEfterIndtastning = true;
+    let spillerenHarIndtastetPoint = false;
+    let antalSlagPrSpiller = 3;
+    let resterendeSlag = antalSlagPrSpiller;
+    let visTotal = false;
+    let shiftPressed = false;
+    let dato = new Date();
+    let detAktuelleSekund = 0; // skal måske hedde det gemte sekund i stedet
+    let spillerErVedAtRetteFejlPaaNotesblok = false;
+    let spillerErVedAtRetteNavneOgAntalSpillere = false;
+    let PogT = false;
+    let punktNavneListe = ["Enere", "Toere", "Treere", "Fireere", "Femere", "Seksere", "Bonus", "Par", "To Par", "Tre Par", "Tre Ens", "Fire Ens", "To Gange Tre Ens", "Lille", "Stor", "Royal", "Hus", "Chancen", "Yatzy", ""]; // "I plus eller minus"
+    let visGenvejstaster = false;
+    let shiftKnap = "a"; // "shift", når den knap kan bruges
+    let altKnap = "z"; // "alt", når den knap kan bruges
+    let gameHasBegun = false;
+    let altPressed = false;
 
 
     // Skal omdøbes: Skal måske bruges til at vælge punkter med, så man kan skrive point på 
-    var rightPressed = false;
-    var leftPressed = false;
-    var upPressed = false;
-    var downPressed = false;
+    let rightPressed = false;
+    let leftPressed = false;
+    let upPressed = false;
+    let downPressed = false;
 
-    var undoInfo =
+    let undoInfo =
     {
       PunktNr: 0,
       Punkt: "",
@@ -167,9 +170,9 @@
     console.log("efter de fleste variabel erklæringer") // forsøg på at afklare rækkefølgen ved kørsel af dette javascript
 
 
-    // var notesblok = [];
-    var notesblok = new Array();
-    var notesblokTalArray = [];
+    // let notesblok = [];
+    let notesblok = new Array();
+    let notesblokTalArray = [];
 
     //addPlayers(); // denne linie er nødvendig, når yatzy startes fra denne html
 
@@ -187,8 +190,7 @@
       }
 
 
-      if (PogT)   // Skal fjernes inden upload
-      {  // her forudsættes at antalSpillere er lig 2
+      if (PogT) {  // her forudsættes at antalSpillere er lig 2
         notesblok[0].Spiller = "T";
         notesblok[1].Spiller = "P";
       }
@@ -211,7 +213,7 @@
 
     }
 
-    var resultat = {
+    let resultat = {
       Enere: 0,
       Toere: 0,
       Treere: 0,
@@ -645,7 +647,7 @@
 
 
     function writeHoldingStatusToScreen() {
-      var holdingStatusText = "Terning 1 ";
+      let holdingStatusText = "Terning 1 ";
       if (holdDieOne) {
         holdingStatusText += "holdes.";
         ydreDivDie1.innerHTML = "<div id=\"die1\" onclick=\"toggleHoldDieOne()\" class=\"diceGreen\"></div>";
@@ -734,15 +736,15 @@
       if (resterendeSlag > 0) {
         resterendeSlag = resterendeSlag - 1;
 
-        var die1 = document.getElementById("die1");
-        var die2 = document.getElementById("die2");
-        var die3 = document.getElementById("die3");
-        var die4 = document.getElementById("die4");
-        var die5 = document.getElementById("die5");
-        var die6 = document.getElementById("die6");
+        let die1 = document.getElementById("die1");
+        let die2 = document.getElementById("die2");
+        let die3 = document.getElementById("die3");
+        let die4 = document.getElementById("die4");
+        let die5 = document.getElementById("die5");
+        let die6 = document.getElementById("die6");
 
-        var status = document.getElementById("status");
-        var onHoldStatus = document.getElementById("onHoldStatus");
+        let status = document.getElementById("status");
+        let onHoldStatus = document.getElementById("onHoldStatus");
 
         if (holdDieOne == false) {
           d1 = Math.floor(Math.random() * 6) + 1; // Er det her en tilstrækkelig god måde at generere tilfældige tal
@@ -763,7 +765,7 @@
           d6 = Math.floor(Math.random() * 6) + 1;
         }
         diceArray = [d1, d2, d3, d4, d5, d6];
-        var diceTotal = d1 + d2 + d3 + d4 + d5 + d6;
+        let diceTotal = d1 + d2 + d3 + d4 + d5 + d6;
         die1.innerHTML = d1;
         die2.innerHTML = d2;
         die3.innerHTML = d3;
@@ -846,7 +848,7 @@
 
     /*
     function udskrivNotesblok() {
-      var notesblokTekst = "";
+      let notesblokTekst = "";
       notesblokTekst += "<h2>Spiller: " + notesblok[aktivSpillerNr].Spiller + "</h2>"; 
       notesblokTekst += "Notesblok: <br>";
       notesblokTekst += "Enere: " + notesblok[aktivSpillerNr].Enere + makeButton(1, "Enere", beregnEnere());
@@ -876,9 +878,9 @@
 
     function udskrivNotesblok() {
 
-      var spillerensPointPaaPunkt = 0;
-      var spillerensPointTotal = 0;
-      var notesblokArray = [];  // burde nok hedde notesblokTekstArray
+      let spillerensPointPaaPunkt = 0;
+      let spillerensPointTotal = 0;
+      let notesblokArray = [];  // burde nok hedde notesblokTekstArray
       let punktTekst = "";
 
       // Enere:
@@ -1640,8 +1642,8 @@
 
 
     function beregnNPar(n) {
-      var nPairs = 0;
-      var PairValueArray = [0, 0, 0];
+      let nPairs = 0;
+      let PairValueArray = [0, 0, 0];
 
       for (let i = 0; i < resultArray.length; i++) {
         if (resultArray[i] >= 2) {
@@ -1686,8 +1688,8 @@
 
 
     function beregnNGangeTreEns(n) {
-      var nTriples = 0;
-      var TripleValueArray = [0, 0];
+      let nTriples = 0;
+      let TripleValueArray = [0, 0];
 
 
       for (let i = 0; i < resultArray.length; i++) {
@@ -2080,8 +2082,8 @@
 
 
 
-    var dataReceivedFromMenuPage = localStorage['objectToPassDataSendt'];
-    var navneArray = [];
+    let dataReceivedFromMenuPage = localStorage['objectToPassDataSendt'];
+    let navneArray = [];
 
     console.log("dataReceivedFromMenuPage: " + dataReceivedFromMenuPage);
 
@@ -2103,7 +2105,7 @@
 
     }
 
-    var thereIsASaveGameAndPlayerWantsItLoaded = false;
+    let thereIsASaveGameAndPlayerWantsItLoaded = false;
 
     function autoSave() {
       // Funktionen skal kaldes af changePlayer funktionen
@@ -2355,23 +2357,25 @@
 
   <div id="spilDiven">
 
-    <div id="ydreDivDie1">
-      <div id="die1" onclick="toggleHoldDieOne()" class="dice">0</div>
-    </div>
-    <div id="ydreDivDie2">
-      <div id="die2" onclick="toggleHoldDieTwo()" class="dice">0</div>
-    </div>
-    <div id="ydreDivDie3">
-      <div id="die3" onclick="toggleHoldDieThree()" class="dice">0</div>
-    </div>
-    <div id="ydreDivDie4">
-      <div id="die4" onclick="toggleHoldDieFour()" class="dice">0</div>
-    </div>
-    <div id="ydreDivDie5">
-      <div id="die5" onclick="toggleHoldDieFive()" class="dice">0</div>
-    </div>
-    <div id="ydreDivDie6">
-      <div id="die6" onclick="toggleHoldDieSix()" class="dice">0</div>
+    <div id="allDiceDiv" class="prevent-select">
+      <div id="ydreDivDie1">
+        <div id="die1" onclick="toggleHoldDieOne()" class="dice">0</div>
+      </div>
+      <div id="ydreDivDie2">
+        <div id="die2" onclick="toggleHoldDieTwo()" class="dice">0</div>
+      </div>
+      <div id="ydreDivDie3">
+        <div id="die3" onclick="toggleHoldDieThree()" class="dice">0</div>
+      </div>
+      <div id="ydreDivDie4">
+        <div id="die4" onclick="toggleHoldDieFour()" class="dice">0</div>
+      </div>
+      <div id="ydreDivDie5">
+        <div id="die5" onclick="toggleHoldDieFive()" class="dice">0</div>
+      </div>
+      <div id="ydreDivDie6">
+        <div id="die6" onclick="toggleHoldDieSix()" class="dice">0</div>
+      </div>
     </div>
 
     <button id="rollDiceButton" onclick="rollDice();this.blur();">Kast terninger</button>
