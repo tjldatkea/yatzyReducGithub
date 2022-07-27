@@ -1,0 +1,168 @@
+<!-- welcome menu til github pages -->
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+
+<head>
+  <style>
+    .center {
+      margin: auto;
+      width: 60%;
+      border: 3px solid #73AD21;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="center">
+    <div>
+      <h1>YATZY</h1>
+    </div>
+
+    <div id="antalSpillerBlokDiven">lnsvlnsvsd</div>
+
+    <div id="navneDiven"></div>
+
+
+    <button onclick="startYatzy(true)">Fortsæt igangværende Yatzy spil</button>
+
+
+    <!--
+<button onclick="document.location='page2.html'">HTML Tutorial</button> 
+<button onclick="startYatzy(false)">Start Yatzy</button> 
+<a href="page2.html">Til page2</a>
+<a href="questions.html">Click here for the questions.</a>
+<a href="page3.html">Til page3</a>
+<a href="Yatzy.html">Til Yatzy</a>
+-->
+
+
+  </div>
+
+  <script>
+    var firstData = {
+      'key1': 1,
+      'key2': 2
+    };
+
+    var secondData = {
+      'key1': 3,
+      'key2': 4
+    };
+
+    var tal = 7;
+    var tekst = ""
+
+    var antalSpillere = 0;
+
+    var navneArray = [];
+
+    var myData = [firstData, secondData];
+
+    visAntalSpillereInput();
+
+    function visAntalSpillereInput() {
+      let HTMLTekst = "";
+
+      // Felt til at rette antallet af spillere:
+      HTMLTekst += "Antal spillere: <input type=\"number\" id=\"inputAntalSpillere" + "\" value=" + antalSpillere + "><br><br>";
+
+      HTMLTekst += "<button onclick=\"hentAntalSpillereFraFormular()\">Gem nyt antal spillere</button><br><br>";
+
+      HTMLTekst += "<br><button onclick=\"sendDataPogT()\">P og T</button><br><br>";
+
+      document.getElementById("antalSpillerBlokDiven").innerHTML = HTMLTekst;
+    }
+
+
+
+    function hentAntalSpillereFraFormular() {
+      let antalSpillereInput = document.getElementById("inputAntalSpillere").value;
+      console.log("antalSpillereInput: " + antalSpillereInput);
+      localStorage.setItem('objectToPass', antalSpillereInput);
+
+      antalSpillere = antalSpillereInput;
+
+      visNavneInput();
+    }
+
+    function visNavneInput() {
+      let HTMLTekst = "";
+
+      // Felter til at rette spillernes navne:
+      for (let i = 0; i < antalSpillere; i += 1) {
+        HTMLTekst += "Spiller " + (i + 1) + "'s navn: ";
+        HTMLTekst += "<input type=\"text\" id=\"inputTekst" + i + "\"" + "value=\"Spiller " + (i + 1) + "\"" + "><br>";
+        console.log("inde i for løkken")
+      }
+      HTMLTekst += "<br><button onclick=\"hentTekstFraFormularer()\">Start spil</button><br><br>";
+
+      document.getElementById("navneDiven").innerHTML = HTMLTekst;
+
+    }
+
+
+    function hentTekstFraFormularer() {
+
+      for (let i = 0; i < antalSpillere; i += 1) {
+        navneArray.push(document.getElementById("inputTekst" + i).value);
+        console.log(navneArray[i]);
+      }
+
+      sendData();
+
+    }
+
+    function sendData() {
+      localStorage.setItem('objectToPassDataSendt', true);
+      localStorage.setItem('objectToPassAntalSpillere', antalSpillere);
+      localStorage.setItem('objectToPassNavneArrayet', navneArray);
+
+      for (let i = 0; i < antalSpillere; i += 1) {
+        localStorage.setItem('objectToPassNavn' + i, navneArray[i]);
+      }
+
+      startYatzy(false);
+      //localStorage.setItem("thereIsASaveGameAndPlayerWantsItLoaded", false);
+      //document.location='Yatzy.html';
+
+    }
+
+    function sendDataPogT() {
+      navneArray = ["T", "P"];
+      antalSpillere = 2;
+      localStorage.setItem('objectToPassDataSendt', true);
+      localStorage.setItem('objectToPassAntalSpillere', antalSpillere);
+      localStorage.setItem('objectToPassNavneArrayet', navneArray);
+
+      for (let i = 0; i < antalSpillere; i += 1) {
+        localStorage.setItem('objectToPassNavn' + i, navneArray[i]);
+      }
+
+      startYatzy(false);
+
+    }
+
+
+    function startYatzy(continueGame) {
+      if (continueGame) {
+        localStorage.setItem("thereIsASaveGameAndPlayerWantsItLoaded", true);
+      }
+      else {
+        localStorage.setItem("thereIsASaveGameAndPlayerWantsItLoaded", false);
+      }
+
+      document.location = 'yatzyReduceretTilMinimum.html';
+
+    }
+
+
+  </script>
+
+</body>
+
+</html>

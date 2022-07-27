@@ -1,0 +1,2452 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+    }
+
+    td,
+    th {
+      border: 1px solid #dddddd;
+      text-align: center;
+      height: 24px;
+      width: 200px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+
+    div.dice {
+      float: left;
+      width: 32px;
+      background: #F5F5F5;
+      border: #999 1px solid;
+      padding: 10px;
+      font-size: 24px;
+      text-align: center;
+      margin: 5px;
+    }
+
+    div.diceGreen {
+      float: left;
+      width: 32px;
+      background: #00FF00;
+      border: #999 1px solid;
+      padding: 10px;
+      font-size: 24px;
+      text-align: center;
+      margin: 5px;
+    }
+
+    div.webscrapingDivVisible {
+      display: block;
+    }
+
+    div.webscrapingDivInvisible {
+      display: none;
+    }
+
+    input[type=number] {
+      width: 50px;
+      -webkit-transition: width .35s ease-in-out;
+      transition: width .35s ease-in-out;
+    }
+
+    input[type=number]:focus {
+      width: 100px;
+    }
+
+    .show {
+      display: block;
+    }
+  </style>
+  <script>
+
+
+    // lav backup og highscore vha nodeJS
+
+    // PBEM play by email
+
+
+    // valg af punkt med piltaster(baggrunden i tabellen kan skifte farve som en markør) 
+    // Evt prøv at tilføje en computerspiller
+    // Når man har skrevet et nummer i inputfelt 1, så markeres det felt eller den tekst hvor pointene rettes.
+    // Skriv spillernavne og highscores og evt savegames til fil vha node.js
+    // Hvordan kan jeg se at de sidste tre terninger med sikkerhed er slået, hvis jeg holder tre terninger og de sidste tre ikke ændrer sig ved et slag(det skulle jo kun ske 1 ud af ca 200 gange, men det skete 4 gange i løbet af et par spil for os)
+    // Hver enkelt spiller skal efter at have tastet sit navn kunne vælge sit sprog og al tekst bør være i nogle dataformater der er let udskiftelige, så man bare kan skrive playerLanguage[].... eller noget i den stil
+
+    // Bugs:
+    // Når et spil gendannes, så er det først når alle spillere har haft deres tur at deres bonus kommer igen, hvis de allerede havde fået den.
+    // tjek når man egentlig burde have fået bonus, altså 4 i plus, men mangler kun at slå med etterne
+
+    // Forslag: 
+    // Knap med brugsvejledning
+    // Man skal kunne se at terningerne er ved at blive kastet eller at de er kastet
+    // Man skal kunne tage et screenshot af resultatet vha en knap(Kenneth???)
+
+
+    // Kan jeg få F1 og de andre F taster til kun at virke i spillet?
+    // evt skift af farve ved navn 
+
+
+    // Senere:
+    // Husk at fjerne vores navne inden upload, se efter: Skal fjernes inden upload
+
+    // Prøv at lave Ticket to Ride på samme måde som dette spil og tilføj aktier til US kortet
+
+    var holdDieOne = holdDieTwo = holdDieThree = holdDieFour = holdDieFive = holdDieSix = false;
+    var d1 = d2 = d3 = d4 = d5 = d6 = 0;
+    var diceArray; // [d1,d2,d3,d4,d5,d6] 
+    var resultArray; // [nEnere,nToere,nTreere,nFireere,nFemere,nSeksere]
+    var aktivSpillerNr = 0;
+    var kastNr = 0;
+    var antalSpillere = 0; //2;
+    var knapperSkalForsvindeEfterIndtastning = true;
+    var spillerenHarIndtastetPoint = false;
+    var antalSlagPrSpiller = 3;
+    var resterendeSlag = antalSlagPrSpiller;
+    var visTotal = false;
+    var shiftPressed = false;
+    var dato = new Date();
+    var detAktuelleSekund = 0; // skal måske hedde det gemte sekund i stedet
+    var spillerErVedAtRetteFejlPaaNotesblok = false;
+    var spillerErVedAtRetteNavneOgAntalSpillere = false;
+    var PogT = false; // Skal fjernes inden upload
+    var punktNavneListe = ["Enere", "Toere", "Treere", "Fireere", "Femere", "Seksere", "Bonus", "Par", "To Par", "Tre Par", "Tre Ens", "Fire Ens", "To Gange Tre Ens", "Lille", "Stor", "Royal", "Hus", "Chancen", "Yatzy", ""]; // "I plus eller minus"
+    var visGenvejstaster = false;
+    var shiftKnap = "a"; // "shift", når den knap kan bruges
+    var altKnap = "z"; // "alt", når den knap kan bruges
+    var gameHasBegun = false;
+    var altPressed = false;
+
+
+    // Skal omdøbes: Skal måske bruges til at vælge punkter med, så man kan skrive point på 
+    var rightPressed = false;
+    var leftPressed = false;
+    var upPressed = false;
+    var downPressed = false;
+
+    var undoInfo =
+    {
+      PunktNr: 0,
+      Punkt: "",
+      Point: -1,
+      UndoButtonText: ""
+    };
+
+    function Player(spillerNavn) {
+      this.Spiller = "" + spillerNavn + "",
+        this.Enere = -1,
+        this.Toere = -1,
+        this.Treere = -1,
+        this.Fireere = -1,
+        this.Femere = -1,
+        this.Seksere = -1,
+        this.Bonus = -1,
+        this.Par = -1,
+        this.ToPar = -1,
+        this.TrePar = -1,
+        this.TreEns = -1,
+        this.FireEns = -1,
+        this.ToGangeTreEns = -1,
+        this.Lille = -1,
+        this.Stor = -1,
+        this.Royal = -1,
+        this.Hus = -1,
+        this.Chancen = -1,
+        this.Yatzy = -1,
+        this.AlleEnereTilSeksereSkrevetPaa = false // kan vist slettes her og nedenunder
+    };
+
+    console.log("efter de fleste variabel erklæringer") // forsøg på at afklare rækkefølgen ved kørsel af dette javascript
+
+
+    // var notesblok = [];
+    var notesblok = new Array();
+    var notesblokTalArray = [];
+
+    //addPlayers(); // denne linie er nødvendig, når yatzy startes fra denne html
+
+    function addPlayers() {
+
+      for (let i = 0; i < antalSpillere; i++) {
+        notesblok.push(new Player("Player " + (i + 1)));
+
+
+      }
+
+
+      for (let i = 0; i < antalSpillere; i += 1) {
+        notesblokTalArray.push(new Array(19)); // Er et multidimensionelt array, hvis der er mere end én spiller
+      }
+
+
+      if (PogT)   // Skal fjernes inden upload
+      {  // her forudsættes at antalSpillere er lig 2
+        notesblok[0].Spiller = "T";
+        notesblok[1].Spiller = "P";
+      }
+
+    }
+
+    // forsøg på at tømme skærmen og kun indstille antal spillere og skrive navne inden opstart af nyt spil
+    function gameStart(gameStarting) // gameStart kaldes med true som parameter, når spilleren trykker på start nyt spil knappen 
+    {/* // Denne her giver nogle problemer, muligvis når udskrivNotesblok kaldes fra retNavneOgAntalSpillere(), denne funktion kaldes som det første og jeg ved ikke om det giver problemer med variabel erklæringerne???
+  if (gameStarting)
+  {
+	document.getElementById("spilDiven").style.visibility = "visible";
+	gameHasBegun = true;
+  }
+  else
+  {
+    document.getElementById("spilDiven").style.visibility = "hidden";
+    retNavneOgAntalSpillere();
+  }*/
+
+    }
+
+    var resultat = {
+      Enere: 0,
+      Toere: 0,
+      Treere: 0,
+      Fireere: 0,
+      Femere: 0,
+      Seksere: 0,
+      Par: 0,
+      ToPar: 0,
+      TrePar: 0,
+      TreEns: 0,
+      FireEns: 0,
+      ToGangeTreEns: 0,
+      Lille: 0,
+      Stor: 0,
+      Royal: 0,
+      Hus: 0,
+      Chancen: 0,
+      Yatzy: 0 //,
+    };
+    // Slut på variabel/objekt erklæringerne
+
+
+    // disse to linier er udenfor funktionerne
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+
+
+    // Bruges denne her overhovedet
+    function disableScroll() {
+      // Get the current page scroll position
+      scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+
+        // if any scroll is attempted, set this to the previous value
+        window.onscroll = function () {
+          window.scrollTo(scrollLeft, scrollTop);
+        };
+    }
+
+
+    function keyDownHandler(e) {
+      if (e.key == "1") {
+        if (shiftPressed || resterendeSlag == 0) {
+          if (notesblok[aktivSpillerNr].Enere == -1 && (!(spillerenHarIndtastetPoint)))  // kunne sættes ind med et AND i ovenstående if betingelse
+          {
+            skrivPaaNotesblok(1, beregnEnere())
+            console.log("1 trykket med shift eller resterende slag er lig nul");
+          }
+        }
+        else // 1 er trykket, men shift/a er ikke trykket og spilleren har stadig et eller flere slag tilbage
+          if (altPressed) // så holder spilleren alt(z) nede, mens han/hun har trykket på 1. I så fald holdes der på alle terninger der er landet på 1
+          {
+            selectAllDiceWithChosenFaceValue(1);
+          }
+          else {
+            toggleHoldDieOne();
+            console.log("1 trykket uden shift");
+          }
+      }
+      else if (e.key == "2") {
+        if (shiftPressed || resterendeSlag == 0) {
+          if (notesblok[aktivSpillerNr].Toere == -1 && (!(spillerenHarIndtastetPoint))) {
+            skrivPaaNotesblok(2, beregnToere())
+            console.log("2 trykket med shift eller resterende slag er lig nul");
+          }
+        }
+        else // * er trykket, men shift/a er ikke trykket og spilleren har stadig et eller flere slag tilbage
+          if (altPressed) // så holder spilleren alt(z) nede, mens han/hun har trykket på *. I så fald holdes der på alle terninger der er landet på 1
+          {
+            selectAllDiceWithChosenFaceValue(2);
+          }
+          else {
+            toggleHoldDieTwo();
+            console.log("2 trykket uden shift");
+          }
+      }
+      else if (e.key == "3") {
+        if (shiftPressed || resterendeSlag == 0) {
+          if (notesblok[aktivSpillerNr].Treere == -1 && (!(spillerenHarIndtastetPoint))) {
+            skrivPaaNotesblok(3, beregnTreere())
+            console.log("3 trykket med shift eller resterende slag er lig nul");
+          }
+        }
+        else // * er trykket, men shift/a er ikke trykket og spilleren har stadig et eller flere slag tilbage
+          if (altPressed) // så holder spilleren alt(z) nede, mens han/hun har trykket på *. I så fald holdes der på alle terninger der er landet på 1
+          {
+            selectAllDiceWithChosenFaceValue(3);
+          }
+          else {
+            toggleHoldDieThree();
+            console.log("3 trykket uden shift");
+          }
+      }
+      else if (e.key == "4") {
+        if (shiftPressed || resterendeSlag == 0) {
+          if (notesblok[aktivSpillerNr].Fireere == -1 && (!(spillerenHarIndtastetPoint))) {
+            skrivPaaNotesblok(4, beregnFireere())
+            console.log("4 trykket med shift eller resterende slag er lig nul");
+          }
+        }
+        else // * er trykket, men shift/a er ikke trykket og spilleren har stadig et eller flere slag tilbage
+          if (altPressed) // så holder spilleren alt(z) nede, mens han/hun har trykket på *. I så fald holdes der på alle terninger der er landet på 1
+          {
+            selectAllDiceWithChosenFaceValue(4);
+          }
+          else {
+            toggleHoldDieFour();
+            console.log("4 trykket uden shift");
+          }
+      }
+      else if (e.key == "5") {
+        if (shiftPressed || resterendeSlag == 0) {
+          if (notesblok[aktivSpillerNr].Femere == -1 && (!(spillerenHarIndtastetPoint))) {
+            skrivPaaNotesblok(5, beregnFemere())
+            console.log("5 trykket med shift eller resterende slag er lig nul");
+          }
+        }
+        else // * er trykket, men shift/a er ikke trykket og spilleren har stadig et eller flere slag tilbage
+          if (altPressed) // så holder spilleren alt(z) nede, mens han/hun har trykket på *. I så fald holdes der på alle terninger der er landet på 1
+          {
+            selectAllDiceWithChosenFaceValue(5);
+          }
+          else {
+            toggleHoldDieFive();
+            console.log("5 trykket uden shift");
+          }
+      }
+      else if (e.key == "6") {
+        if (shiftPressed || resterendeSlag == 0) {
+          if (notesblok[aktivSpillerNr].Seksere == -1 && (!(spillerenHarIndtastetPoint))) {
+            skrivPaaNotesblok(6, beregnSeksere())
+            console.log("6 trykket med shift eller resterende slag er lig nul");
+          }
+        }
+        else // * er trykket, men shift/a er ikke trykket og spilleren har stadig et eller flere slag tilbage
+          if (altPressed) // så holder spilleren alt(z) nede, mens han/hun har trykket på *. I så fald holdes der på alle terninger der er landet på 1
+          {
+            selectAllDiceWithChosenFaceValue(6);
+          }
+          else {
+            toggleHoldDieSix();
+            console.log("6 trykket");
+          }
+      }
+      else if (e.key == "7") {
+        if (shiftPressed || resterendeSlag == 0) {
+          if (notesblok[aktivSpillerNr].Par == -1 && (!(spillerenHarIndtastetPoint))) {
+            skrivPaaNotesblok(7, beregnPar())
+            console.log("7 trykket med shift eller resterende slag er lig nul");
+          }
+        }
+        else {
+          toggleHoldDieOne();
+          toggleHoldDieTwo();
+          toggleHoldDieThree();
+          toggleHoldDieFour();
+          toggleHoldDieFive();
+          toggleHoldDieSix();
+          console.log("7 trykket uden shift");
+        }
+      }
+      else if (e.key == "8") {
+        if (shiftPressed || resterendeSlag == 0) {
+          if (notesblok[aktivSpillerNr].ToPar == -1 && (!(spillerenHarIndtastetPoint))) {
+            skrivPaaNotesblok(8, beregnToPar())
+            console.log("8 trykket med shift eller resterende slag er lig nul");
+          }
+        }
+        else {
+          toggleHoldAllDice(true);
+          console.log("8 trykket uden shift");
+        }
+      }
+      else if (e.key == "9") {
+        if (shiftPressed || resterendeSlag == 0) {
+          if (notesblok[aktivSpillerNr].TrePar == -1 && (!(spillerenHarIndtastetPoint))) {
+            skrivPaaNotesblok(9, beregnTrePar())
+            console.log("9 trykket med shift eller resterende slag er lig nul");
+          }
+        }
+        else {
+          toggleHoldAllDice(false);
+          console.log("9 trykket uden shift");
+        }
+      }
+      else if (e.key == "0" || e.key == ",") {
+        if (shiftPressed || resterendeSlag == 0) {
+          if (notesblok[aktivSpillerNr].TreEns == -1 && (!(spillerenHarIndtastetPoint))) {
+            skrivPaaNotesblok(10, beregnTreEns())
+            console.log("0 eller , trykket med shift eller resterende slag er lig nul");
+          }
+        }
+        else { // Der skal ikke gøres noget i det her tilfælde
+          console.log("0 eller , trykket uden shift");
+        }
+      }
+      else if (e.key == "+") {
+        if (shiftPressed || resterendeSlag == 0) {
+          if (notesblok[aktivSpillerNr].FireEns == -1 && (!(spillerenHarIndtastetPoint))) {
+            skrivPaaNotesblok(11, beregnFireEns())
+            console.log("+ trykket med shift eller resterende slag er lig nul");
+          }
+        }
+        else { // Der skal ikke gøres noget i det her tilfælde
+          console.log("+ trykket uden shift");
+        }
+      }
+      else if (e.key == "´" || e.key == "½" || e.key == "-" || e.key == "`") {
+        if (shiftPressed || resterendeSlag == 0) {
+          if (notesblok[aktivSpillerNr].ToGangeTreEns == -1 && (!(spillerenHarIndtastetPoint))) {
+            skrivPaaNotesblok(12, beregnToGangeTreEns())
+            console.log("´ eller ½ eller - trykket med shift eller resterende slag er lig nul");
+          }
+        }
+        else { // Der skal ikke gøres noget i det her tilfælde
+          console.log("´ eller ½ eller - trykket uden shift");
+        }
+      }
+      else if (e.key == "Enter") {
+        console.log("enter trykket");
+      }
+
+      else if (e.key === " ") {   // <---------- SPACE Key input
+        rollDice();
+        console.log("space trykket");
+      }
+
+      else if (e.key == "Backspace") {
+        changePlayer();
+        console.log("backspace trykket");
+      }
+      else if (e.key == "l") {
+        if (notesblok[aktivSpillerNr].Lille == -1 && (!(spillerenHarIndtastetPoint))) {
+          skrivPaaNotesblok(13, beregnLille())
+          console.log("l trykket");
+        }
+      }
+      else if (e.key == "s") {
+        if (notesblok[aktivSpillerNr].Stor == -1 && (!(spillerenHarIndtastetPoint))) {
+          skrivPaaNotesblok(14, beregnStor())
+          console.log("s trykket");
+        }
+      }
+      else if (e.key == "r") {
+        if (notesblok[aktivSpillerNr].Royal == -1 && (!(spillerenHarIndtastetPoint))) {
+          skrivPaaNotesblok(15, beregnRoyal())
+          console.log("r trykket");
+        }
+      }
+      else if (e.key == "h") {
+        if (notesblok[aktivSpillerNr].Hus == -1 && (!(spillerenHarIndtastetPoint))) {
+          skrivPaaNotesblok(16, beregnHus())
+          console.log("h trykket");
+        }
+      }
+      else if (e.key == "c") {
+        if (notesblok[aktivSpillerNr].Chancen == -1 && (!(spillerenHarIndtastetPoint))) {
+          skrivPaaNotesblok(17, beregnChancen())
+          console.log("c trykket");
+        }
+      }
+      else if (e.key == "y") {
+        if (notesblok[aktivSpillerNr].Yatzy == -1 && (!(spillerenHarIndtastetPoint))) {
+          skrivPaaNotesblok(18, beregnYatzy())
+          console.log("y trykket");
+        }
+      }
+      else if (e.key == "f") {
+        skrivPaaNotesblok(undoInfo.PunktNr, -1)
+        console.log("f trykket");
+      }
+      else if (e.key == "Insert") {
+        changePlayerAndRollDice();
+        console.log("insert trykket");
+      }
+      else if (e.key == "a") { // midlertidig indtil at jeg ved hvorfor det ikke virker med shift   
+        shiftPressed = true;  // **************** Her sættes shiftPressed til true
+        console.log("shift(a) trykket");
+      }
+      else if (e.key == "z") { // midlertidig indtil at jeg ved hvorfor det ikke virker med ALT knappen 
+        altPressed = true;  // 
+        console.log("alt(z) trykket");
+      }
+
+    }
+
+
+    function keyUpHandler(e) {
+      if (e.key == "a") { // midlertidig indtil at jeg ved hvorfor det ikke virker med shift
+        shiftPressed = false; // // **************** Her sættes shiftPressed til false
+        console.log("shift(a) sluppet"); // test
+      }
+      else if (e.key == "z") {
+        altPressed = false;
+        console.log("alt(z) sluppet"); // test
+      }
+
+    }
+
+    function selectAllDiceWithChosenFaceValue(faceValueSelected) {
+      if (d1 == faceValueSelected) {
+        holdDieOne = true;
+      }
+      else {
+        holdDieOne = false;
+      }
+
+      if (d2 == faceValueSelected) {
+        holdDieTwo = true;
+      }
+      else {
+        holdDieTwo = false;
+      }
+
+      if (d3 == faceValueSelected) {
+        holdDieThree = true;
+      }
+      else {
+        holdDieThree = false;
+      }
+
+      if (d4 == faceValueSelected) {
+        holdDieFour = true;
+      }
+      else {
+        holdDieFour = false;
+      }
+
+      if (d5 == faceValueSelected) {
+        holdDieFive = true;
+      }
+      else {
+        holdDieFive = false;
+      }
+
+      if (d6 == faceValueSelected) {
+        holdDieSix = true;
+      }
+      else {
+        holdDieSix = false;
+      }
+
+      writeHoldingStatusToScreen();
+
+    }
+
+    // function toggleHoldDie(dieNumber) {
+    //   // er det referencer til variablerne eller er det kun deres værdier der bliver gemt i listen, jeg mener at det er det sidste
+    //   // listen får i hvert fald ikke var variblernes værdier, når de ændres
+    //   let holdDieArray = [holdDieOne, holdDieTwo, holdDieThree, holdDieFour, holdDieFive, holdDieSix]
+
+    //   holdDieArray[dieNumber] = !(holdDieArray[dieNumber])
+
+    //   //[holdDieOne, holdDieTwo, holdDieThree, holdDieFour, holdDieFive, holdDieSix] = holdDieArray // det her vil ikke virke da der er noget i variblerne i forvejen og det vil blokere for destructering
+
+    //   holdDieOne = holdDieArray[0]
+    //   holdDieTwo = holdDieArray[1]
+    //   holdDieThree = holdDieArray[2]
+    //   holdDieFour = holdDieArray[3]
+    //   holdDieFive = holdDieArray[4]
+    //   holdDieSix = holdDieArray[5]
+
+    //   writeHoldingStatusToScreen();
+    // }
+
+    function toggleHoldDieOne() {
+      if (holdDieOne) {
+        holdDieOne = false;
+        writeHoldingStatusToScreen();
+      }
+      else {
+        holdDieOne = true;
+        writeHoldingStatusToScreen();
+      }
+    }
+
+    function toggleHoldDieTwo() {
+      if (holdDieTwo) {
+        holdDieTwo = false;
+        writeHoldingStatusToScreen();
+      }
+      else {
+        holdDieTwo = true;
+        writeHoldingStatusToScreen();
+      }
+    }
+
+    function toggleHoldDieThree() {
+      if (holdDieThree) {
+        holdDieThree = false;
+        writeHoldingStatusToScreen();
+      }
+      else {
+        holdDieThree = true;
+        writeHoldingStatusToScreen();
+      }
+    }
+
+    function toggleHoldDieFour() {
+      if (holdDieFour) {
+        holdDieFour = false;
+        writeHoldingStatusToScreen();
+      }
+      else {
+        holdDieFour = true;
+        writeHoldingStatusToScreen();
+      }
+    }
+
+    function toggleHoldDieFive() {
+      if (holdDieFive) {
+        holdDieFive = false;
+        writeHoldingStatusToScreen();
+      }
+      else {
+        holdDieFive = true;
+        writeHoldingStatusToScreen();
+      }
+    }
+
+    function toggleHoldDieSix() {
+      if (holdDieSix) {
+        holdDieSix = false;
+        writeHoldingStatusToScreen();
+      }
+      else {
+        holdDieSix = true;
+        writeHoldingStatusToScreen();
+      }
+    }
+
+
+    function writeHoldingStatusToScreen() {
+      var holdingStatusText = "Terning 1 ";
+      if (holdDieOne) {
+        holdingStatusText += "holdes.";
+        ydreDivDie1.innerHTML = "<div id=\"die1\" onclick=\"toggleHoldDieOne()\" class=\"diceGreen\"></div>";
+        die1.innerHTML = d1;
+      }
+      else {
+        holdingStatusText += "kastes."
+        ydreDivDie1.innerHTML = "<div id=\"die1\" onclick=\"toggleHoldDieOne()\" class=\"dice\"></div>";
+        die1.innerHTML = d1;
+      }
+
+      holdingStatusText += "<br>Terning 2 ";
+      if (holdDieTwo) {
+        holdingStatusText += "holdes.";
+        ydreDivDie2.innerHTML = "<div id=\"die2\" onclick=\"toggleHoldDieTwo()\" class=\"diceGreen\"></div>";
+        die2.innerHTML = d2;
+      }
+      else {
+        holdingStatusText += "kastes."
+        ydreDivDie2.innerHTML = "<div id=\"die2\" onclick=\"toggleHoldDieTwo()\" class=\"dice\"></div>";
+        die2.innerHTML = d2;
+      }
+
+      holdingStatusText += "<br>Terning 3 ";
+      if (holdDieThree) {
+        holdingStatusText += "holdes.";
+        ydreDivDie3.innerHTML = "<div id=\"die3\" onclick=\"toggleHoldDieThree()\" class=\"diceGreen\"></div>";
+        die3.innerHTML = d3;
+      }
+      else {
+        holdingStatusText += "kastes."
+        ydreDivDie3.innerHTML = "<div id=\"die3\" onclick=\"toggleHoldDieThree()\" class=\"dice\"></div>";
+        die3.innerHTML = d3;
+      }
+
+      holdingStatusText += "<br>Terning 4 ";
+      if (holdDieFour) {
+        holdingStatusText += "holdes.";
+        ydreDivDie4.innerHTML = "<div id=\"die4\" onclick=\"toggleHoldDieFour()\" class=\"diceGreen\"></div>";
+        die4.innerHTML = d4;
+      }
+      else {
+        holdingStatusText += "kastes."
+        ydreDivDie4.innerHTML = "<div id=\"die4\" onclick=\"toggleHoldDieFour()\" class=\"dice\"></div>";
+        die4.innerHTML = d4;
+      }
+
+      holdingStatusText += "<br>Terning 5 ";
+      if (holdDieFive) {
+        holdingStatusText += "holdes.";
+        ydreDivDie5.innerHTML = "<div id=\"die5\" onclick=\"toggleHoldDieFive()\" class=\"diceGreen\"></div>";
+        die5.innerHTML = d5;
+      }
+      else {
+        holdingStatusText += "kastes."
+        ydreDivDie5.innerHTML = "<div id=\"die5\" onclick=\"toggleHoldDieFive()\" class=\"dice\"></div>";
+        die5.innerHTML = d5;
+      }
+
+      holdingStatusText += "<br>Terning 6 ";
+      if (holdDieSix) {
+        holdingStatusText += "holdes.";
+        ydreDivDie6.innerHTML = "<div id=\"die6\" onclick=\"toggleHoldDieSix()\" class=\"diceGreen\"></div>";
+        die6.innerHTML = d6;
+      }
+      else {
+        holdingStatusText += "kastes."
+        ydreDivDie6.innerHTML = "<div id=\"die6\" onclick=\"toggleHoldDieSix()\" class=\"dice\"></div>";
+        die6.innerHTML = d6;
+      }
+
+    }
+
+
+    function rollDice() {
+
+      dato = new Date();
+
+      if (detAktuelleSekund == dato.getSeconds() || (detAktuelleSekund + 1) == dato.getSeconds()) // hvilken en er det der skal lægges 1 til???
+      {
+        return;
+      }
+
+      detAktuelleSekund = dato.getSeconds();
+
+      if (resterendeSlag > 0) {
+        resterendeSlag = resterendeSlag - 1;
+
+        var die1 = document.getElementById("die1");
+        var die2 = document.getElementById("die2");
+        var die3 = document.getElementById("die3");
+        var die4 = document.getElementById("die4");
+        var die5 = document.getElementById("die5");
+        var die6 = document.getElementById("die6");
+
+        var status = document.getElementById("status");
+        var onHoldStatus = document.getElementById("onHoldStatus");
+
+        if (holdDieOne == false) {
+          d1 = Math.floor(Math.random() * 6) + 1; // Er det her en tilstrækkelig god måde at generere tilfældige tal
+        }
+        if (holdDieTwo == false) {
+          d2 = Math.floor(Math.random() * 6) + 1;
+        }
+        if (holdDieThree == false) {
+          d3 = Math.floor(Math.random() * 6) + 1;
+        }
+        if (holdDieFour == false) {
+          d4 = Math.floor(Math.random() * 6) + 1;
+        }
+        if (holdDieFive == false) {
+          d5 = Math.floor(Math.random() * 6) + 1;
+        }
+        if (holdDieSix == false) {
+          d6 = Math.floor(Math.random() * 6) + 1;
+        }
+        diceArray = [d1, d2, d3, d4, d5, d6];
+        var diceTotal = d1 + d2 + d3 + d4 + d5 + d6;
+        die1.innerHTML = d1;
+        die2.innerHTML = d2;
+        die3.innerHTML = d3;
+        die4.innerHTML = d4;
+        die5.innerHTML = d5;
+        die6.innerHTML = d6;
+
+        // (mini Analyse af resultat)
+        if (d1 == d2 && d2 == d3 && d3 == d4 && d4 == d5 && d5 == d6) {
+          status.innerHTML = " Yatzy!!!";
+        }
+        else {
+          status.innerHTML = ""; // Det her virker uden document.getElementById("status").innerHTML fordi "var status erklæres ovenover som document.getElementById("status"); derfor refererer status ikke til id'et, men til document...
+        }
+      } // TJEK er det her if betingelsen for resterende slag skal gå til ???  
+      else {
+        toggleHoldAllDice(true);
+      }
+      slag.innerHTML = "Slag: " + resterendeSlag;
+
+      writeHoldingStatusToScreen();
+      countOnesToSixes();
+      udskrivNotesblok();
+
+      autoSave(); // her skal diceAutosave() kaldes
+
+    }  // slut på rollDice
+
+
+    function resetResultat() {
+      resultat.Enere = 0;
+      resultat.Toere = 0;
+      resultat.Treere = 0;
+      resultat.Fireere = 0;
+      resultat.Femere = 0;
+      resultat.Seksere = 0;
+      resultArray = [0, 0, 0, 0, 0, 0];
+    }
+
+    function countOnesToSixes() { // mangler indentering 
+      resetResultat();
+
+      for (let i = 0; i < diceArray.length; i++) {
+        if (diceArray[i] == 1) {
+          resultat.Enere += 1;
+        }
+        else // første else
+        {
+          if (diceArray[i] == 2) {
+            resultat.Toere += 1;
+          }
+          else {
+            if (diceArray[i] == 3) {
+              resultat.Treere += 1;
+            }
+            else {
+              if (diceArray[i] == 4) {
+                resultat.Fireere += 1;
+
+              }
+              else {
+                if (diceArray[i] == 5) {
+                  resultat.Femere += 1;
+                }
+                else {
+                  if (diceArray[i] == 6) {
+                    resultat.Seksere += 1;
+                  }
+                }
+              }
+            }
+          }
+        } // slut på første else
+      } // slut på for løkken
+
+      resultArray = [resultat.Enere, resultat.Toere, resultat.Treere, resultat.Fireere, resultat.Femere, resultat.Seksere];
+
+    } // slut på funktionen
+
+
+    /*
+    function udskrivNotesblok() {
+      var notesblokTekst = "";
+      notesblokTekst += "<h2>Spiller: " + notesblok[aktivSpillerNr].Spiller + "</h2>"; 
+      notesblokTekst += "Notesblok: <br>";
+      notesblokTekst += "Enere: " + notesblok[aktivSpillerNr].Enere + makeButton(1, "Enere", beregnEnere());
+      notesblokTekst += "Toere: " + notesblok[aktivSpillerNr].Toere + makeButton(2, "Toere", beregnToere());
+      notesblokTekst += "Treere: " + notesblok[aktivSpillerNr].Treere + makeButton(3, "Treere", beregnTreere());
+      notesblokTekst += "Fireere: " + notesblok[aktivSpillerNr].Fireere + makeButton(4, "Fireere", beregnFireere());
+      notesblokTekst += "Femere: " + notesblok[aktivSpillerNr].Femere + makeButton(5, "Femere", beregnFemere());
+      notesblokTekst += "Seksere: " + notesblok[aktivSpillerNr].Seksere + makeButton(6, "Seksere", beregnSeksere());
+      notesblokTekst += "Par: " + notesblok[aktivSpillerNr].Par + makeButton(7, "Par", beregnPar());
+      notesblokTekst += "ToPar: " + notesblok[aktivSpillerNr].ToPar + makeButton(8, "ToPar", beregnToPar());
+      notesblokTekst += "TrePar: " + notesblok[aktivSpillerNr].TrePar + makeButton(9, "TrePar", beregnTrePar());
+      notesblokTekst += "TreEns: " + notesblok[aktivSpillerNr].TreEns + makeButton(10, "TreEns", beregnTreEns());
+      notesblokTekst += "FireEns: " + notesblok[aktivSpillerNr].FireEns + makeButton(11, "FireEns", beregnFireEns());
+      notesblokTekst += "ToGangeTreEns: " + notesblok[aktivSpillerNr].ToGangeTreEns + makeButton(12, "ToGangeTreEns", beregnToGangeTreEns());
+      notesblokTekst += "Lille: " + notesblok[aktivSpillerNr].Lille + makeButton(13, "Lille", beregnLille());
+      notesblokTekst += "Stor: " + notesblok[aktivSpillerNr].Stor + makeButton(14, "Stor", beregnStor());
+      notesblokTekst += "Royal: " + notesblok[aktivSpillerNr].Royal + makeButton(15, "Royal", beregnRoyal());
+      notesblokTekst += "Hus: " + notesblok[aktivSpillerNr].Hus + makeButton(16, "Hus", beregnHus());
+      notesblokTekst += "Chancen: " + notesblok[aktivSpillerNr].Chancen + makeButton(27, "Chancen", beregnChancen());
+      notesblokTekst += "Yatzy: " + notesblok[aktivSpillerNr].Yatzy + makeButton(28, "Yatzy", beregnYatzy());
+    
+      notesblokId.innerHTML = notesblokTekst;
+    }
+    
+    */
+
+
+    function udskrivNotesblok() {
+
+      var spillerensPointPaaPunkt = 0;
+      var spillerensPointTotal = 0;
+      var notesblokArray = [];  // burde nok hedde notesblokTekstArray
+      let punktTekst = "";
+
+      // Enere:
+      punktTekst = "Enere: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 1)"; }
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(1)"; }
+
+      notesblokArray.push(punktTekst);
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Enere;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(1, "Enere", beregnEnere()));
+      }
+
+      // Toere
+      punktTekst = "Toere: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 2)"; }
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(2)"; }
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Toere;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(2, "Toere", beregnToere()));
+      }
+
+      // Treere
+      punktTekst = "Treere: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 3)"; }
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(3)"; }
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Treere;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(3, "Treere", beregnTreere()));
+      }
+
+      // Fireere
+      punktTekst = "Fireere: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 4)"; }
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(4)"; }
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Fireere;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(4, "Fireere", beregnFireere()));
+      }
+
+      // Femere
+      punktTekst = "Femere: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 5)"; }
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(5)"; }
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Femere;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(5, "Femere", beregnFemere()));
+      }
+
+      // Seksere
+      punktTekst = "Seksere: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 6)"; }
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(6)"; }
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Seksere;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(6, "Seks'ere", beregnSeksere()));
+      }
+
+
+      // Bonus Bemærk på denne måde beregnes en evt bonus hver eneste gang udskriftNotesblok kaldes
+      // Bør denne være en del af notesblok objektet   
+      let EnereTilSeksere = notesblok[aktivSpillerNr].Enere + notesblok[aktivSpillerNr].Toere + notesblok[aktivSpillerNr].Treere + notesblok[aktivSpillerNr].Fireere + notesblok[aktivSpillerNr].Femere + notesblok[aktivSpillerNr].Seksere;
+
+      if (EnereTilSeksere >= 84) // Kan også flyttes i egen beregnBonus metode
+      {
+        notesblokArray.push("Bonus: ");
+        notesblok[aktivSpillerNr].Bonus = 50; // Det er måske overflødigt at gemme bonusen
+        notesblokArray.push(notesblok[aktivSpillerNr].Bonus);
+        spillerensPointTotal += 50; // spillerensPointPaaPunkt;  
+        notesblokArray.push("");
+      }
+      else {
+
+        if (notesblok[aktivSpillerNr].Enere > -1 && notesblok[aktivSpillerNr].Toere > -1 && notesblok[aktivSpillerNr].Treere > -1 && notesblok[aktivSpillerNr].Fireere > -1 && notesblok[aktivSpillerNr].Femere > -1 && notesblok[aktivSpillerNr].Seksere > -1) {
+          notesblokArray.push("Bonus: ");
+          notesblokArray.push("0");
+          notesblokArray.push("");
+        }
+        else {
+          notesblokArray.push("I plus eller minus: ");
+          notesblokArray.push(beregnPlusMinusBonus(aktivSpillerNr));  // Dette tredje felt kan bruges til at skrive hvad man er i plus med
+          notesblokArray.push("");
+        }
+      }
+
+
+
+
+
+      // Par
+      punktTekst = "Par: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 7)"; }
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(7)"; }
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Par;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(7, "Par", beregnPar()));
+      }
+
+      // ToPar
+      punktTekst = "To Par: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 8)"; }
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(8)"; }
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].ToPar;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(8, "To Par", beregnToPar()));
+      }
+
+      // TrePar
+      punktTekst = "Tre Par: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 9)"; }
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(9)"; }
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].TrePar;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(9, "Tre Par", beregnTrePar()));
+      }
+
+      // TreEns
+      punktTekst = "Tre Ens: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og ,)"; } // og evt de andre genvejstaster*******
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(,)"; } // og evt de andre genvejstaster*******
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].TreEns;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(10, "Tre Ens", beregnTreEns()));
+      }
+
+      // FireEns
+      punktTekst = "Fire Ens: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og +)"; } // og evt de andre genvejstaster*******
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(+)"; } // og evt de andre genvejstaster*******
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].FireEns;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(11, "Fire Ens", beregnFireEns()));
+      }
+
+      // ToGangeTreEns
+      punktTekst = "ToGangeTreEns: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og -)"; } // og evt de andre genvejstaster*******
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(-)"; } // og evt de andre genvejstaster*******
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].ToGangeTreEns;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(12, "To Gange Tre Ens", beregnToGangeTreEns()));
+      }
+
+      // Lille
+      punktTekst = "Lille: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(l)"; } // og evt de andre genvejstaster*******  " + shiftKnap + " og 
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(l)"; } // og evt de andre genvejstaster*******
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Lille;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(13, "Lille", beregnLille()));
+      }
+
+      // Stor
+      punktTekst = "Stor: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(s)"; } // og evt de andre genvejstaster*******  " + shiftKnap + " og 
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(s)"; } // og evt de andre genvejstaster*******
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Stor;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(14, "Stor", beregnStor()));
+      }
+
+      // Royal
+      punktTekst = "Royal: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(r)"; } // og evt de andre genvejstaster*******  " + shiftKnap + " og 
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(r)"; } // og evt de andre genvejstaster******* hvis der er nogen
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Royal;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(15, "Royal", beregnRoyal()));
+      }
+
+      // Hus
+      punktTekst = "Hus: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(h)"; } // og evt de andre genvejstaster******* /*(" + shiftKnap + "*/ og 
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(h)"; } // og evt de andre genvejstaster*******
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Hus;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(16, "Hus", beregnHus()));
+      }
+
+      // Chancen
+      punktTekst = "Chancen: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(c)"; } // og evt de andre genvejstaster******* /*(" + shiftKnap + "*/ og 
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(c)"; } // og evt de andre genvejstaster*******
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Chancen;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(17, "Chancen", beregnChancen()));
+      }
+
+      // Yatzy
+      punktTekst = "Yatzy: "
+      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(y)"; } // og evt de andre genvejstaster******* /*(" + shiftKnap + "*/ og 
+
+      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(y)"; } // og evt de andre genvejstaster*******
+
+      notesblokArray.push(punktTekst);
+
+
+      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Yatzy;
+
+      if (spillerensPointPaaPunkt < 0) {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(spillerensPointPaaPunkt);
+        spillerensPointTotal += spillerensPointPaaPunkt;
+      }
+      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) // ***** Bare så det ikke hopper så meget indtil undo knappen implementeres
+
+      {
+        notesblokArray.push("");
+      }
+      else {
+        notesblokArray.push(makeButton(18, "Yatzy", beregnYatzy()));
+      }
+
+      // I alt
+
+      if (visTotal) {
+        notesblokArray.push("Total: ");
+        notesblokArray.push(spillerensPointTotal);
+      }
+      else {
+        notesblokArray.push("Spillere: ");
+        notesblokArray.push("");
+      }
+
+      notesblokArray.push(undoInfo.UndoButtonText);
+
+      kopierTalFraNotesblokTilNotesblokTalArray(); // ***** Er det her et godt sted at kalde funktionen???
+
+      let j = 1; // j bruges til at nummere punkterne, når spilleren har brug for at rette noget på notesblokken.
+
+      notesblokTekst = "";  // Hvor bliver denne egentlig erklæret??? ****
+      notesblokTekst += "<h2>Spiller: " + notesblok[aktivSpillerNr].Spiller + "</h2>";
+      notesblokTekst += "<table>";
+
+      // test af navnene på spillerne over scoreboardet i højre side
+      notesblokTekst += "<tr><td></td><td></td><td></td>";
+      // Når der skal rettes på notesblokken, så skal spillernes navne rykkes en kolonne ud, da der kommer tal foran punkterne. 
+      if (spillerErVedAtRetteFejlPaaNotesblok) {
+        notesblokTekst += "<td></td>";
+      }
+      for (let k = 0; k < antalSpillere; k += 1) {
+        notesblokTekst += "<td>" + notesblok[k].Spiller + "</td>";
+      }
+
+      notesblokTekst += "<td></td><tr>";
+
+
+      for (let i = 0; i < (notesblokArray.length / 3); i += 1) // **** er det okay med div med 3 her eller giver det andre problemer ????????????????
+      {
+        if (spillerErVedAtRetteFejlPaaNotesblok) {
+          notesblokTekst += "<td width = 10%>";
+          if (i == 6 || i == 19) { notesblokTekst += ""; } else { notesblokTekst += j; j += 1; }
+          notesblokTekst += "</td>";
+        }
+
+        notesblokTekst += "<td>";
+        notesblokTekst += notesblokArray[i * 3];
+        notesblokTekst += "</td>";
+
+        notesblokTekst += "<td>";
+        notesblokTekst += notesblokArray[i * 3 + 1];
+        notesblokTekst += "</td>";
+
+        notesblokTekst += "<td>";
+        notesblokTekst += notesblokArray[i * 3 + 2];
+        notesblokTekst += "</td>";
+
+        for (let k = 0; k < antalSpillere; k += 1) {
+
+          notesblokTekst += "<td>";
+          if (i < 6) {
+            if (notesblokTalArray[k][i + 1] >= 0) {
+              notesblokTekst += notesblokTalArray[k][i + 1];
+            }
+            else {
+              notesblokTekst += "";
+            }
+          }
+          if (i == 6 && notesblok[k].Bonus > 0) {
+            notesblokTekst += 50;
+          }
+          if (i == 6 && notesblok[k].Bonus == -1) {
+            notesblokTekst += beregnPlusMinusBonus(k);
+          }
+          if ((i >= 7) && (i < 19)) {
+            if (notesblokTalArray[k][i] >= 0) {
+              notesblokTekst += notesblokTalArray[k][i];
+            }
+            else {
+              notesblokTekst += "";
+            }
+          }
+          if (i == 19) {
+            if (visTotal) {
+              let sum = 0;
+              for (m = 1; m < notesblokTalArray[k].length; m += 1) // fra 1 af, da der ikke er noget i nul'te index
+              {
+                if (notesblokTalArray[k][m] >= 0) {
+                  sum += notesblokTalArray[k][m]
+                }
+              }
+              if (notesblok[k].Bonus > 0) {
+                sum += 50;
+              }
+
+              notesblokTekst += sum;
+
+            }
+            else {
+              notesblokTekst += notesblok[k].Spiller; // ellers notesblokTekst += "";
+            }
+          }
+          notesblokTekst += "</td>";
+        }
+        notesblokTekst += "<td>" + punktNavneListe[i] + "</td>";
+
+        notesblokTekst += "</tr>";
+
+      }
+
+      notesblokTekst += "</table>";
+
+      // Start på data til webscraping:
+      // Hvis det her bliver skrevet ud hver gang udskrivNotesblok kaldes, så kan man ikke ændre synligheden 
+      // med knapperne, da ændringerne bliver overskrevet. I stedet sæt div ind i HTML til at starte med og 
+      // og nøjes med at ændre innerHTML eller bare innerText her
+      //document.getElementById("webscrapingDiv").innerHTML = "TestWebScrFraUdskriv"
+
+      //notesblokTekst += '<div id="webscrapingDiv" class="webscrapingDiv">TestWebScr</div>';
+      //notesblokTekst += '<div id="webscrapingDiv" style = "display:none;" class="webscrapingDiv">TestWebScr</div>';
+      //notesblokTekst += '<div id="webscrapingDiv" class="webscrapingDivInvisble">TestWebScr</div>';
+      //style.display = "block";
+      //"none"
+      // style = "display:none;"
+
+      notesblokId.innerHTML = notesblokTekst;
+
+    } // slut på udskrivNotesblok
+
+
+
+    function kopierTalFraNotesblokTilNotesblokTalArray() {
+
+      for (let i = 0; i < antalSpillere; i += 1)  // det bør nok være en for løkke for antallet af spiller
+      {
+        notesblokTalArray[i][1] = notesblok[i].Enere;
+        notesblokTalArray[i][2] = notesblok[i].Toere;
+        notesblokTalArray[i][3] = notesblok[i].Treere;
+        notesblokTalArray[i][4] = notesblok[i].Fireere;
+        notesblokTalArray[i][5] = notesblok[i].Femere;
+        notesblokTalArray[i][6] = notesblok[i].Seksere;
+        notesblokTalArray[i][7] = notesblok[i].Par;
+        notesblokTalArray[i][8] = notesblok[i].ToPar;
+        notesblokTalArray[i][9] = notesblok[i].TrePar;
+        notesblokTalArray[i][10] = notesblok[i].TreEns;
+        notesblokTalArray[i][11] = notesblok[i].FireEns;
+        notesblokTalArray[i][12] = notesblok[i].ToGangeTreEns;
+        notesblokTalArray[i][13] = notesblok[i].Lille;
+        notesblokTalArray[i][14] = notesblok[i].Stor;
+        notesblokTalArray[i][15] = notesblok[i].Royal;
+        notesblokTalArray[i][16] = notesblok[i].Hus;
+        notesblokTalArray[i][17] = notesblok[i].Chancen;
+        notesblokTalArray[i][18] = notesblok[i].Yatzy;
+      }
+
+    }
+
+
+
+    // Lav en adjustLength() funktion der sørger for at Spiller 1's tekst er lige lang hele tiden ved at sætte punktummer ind, så spiller to's score kan stå i forlængelse af spiller et's eller prøv at bruge indlejrede div'er
+
+    // function skrivPaaNotesblok(punktNr, punkt, point) 
+    function skrivPaaNotesblok(punktNr, point) {
+      // her skal nok være en switch case der bruger et tal der sendes med skrivPaaNotesblok og som vælger hvilket punkt i resultat der får gemt pointene
+      if (punktNr == 1) { notesblok[aktivSpillerNr].Enere = point; undoInfo.Punkt = "Enere"; }
+      if (punktNr == 2) { notesblok[aktivSpillerNr].Toere = point; undoInfo.Punkt = "Toere"; }
+      if (punktNr == 3) { notesblok[aktivSpillerNr].Treere = point; undoInfo.Punkt = "Treere"; }
+      if (punktNr == 4) { notesblok[aktivSpillerNr].Fireere = point; undoInfo.Punkt = "Fireere"; }
+      if (punktNr == 5) { notesblok[aktivSpillerNr].Femere = point; undoInfo.Punkt = "Femere"; }
+      if (punktNr == 6) { notesblok[aktivSpillerNr].Seksere = point; undoInfo.Punkt = "Seksere"; }
+      if (punktNr == 7) { notesblok[aktivSpillerNr].Par = point; undoInfo.Punkt = "Par"; }
+      if (punktNr == 8) { notesblok[aktivSpillerNr].ToPar = point; undoInfo.Punkt = "To Par"; }
+      if (punktNr == 9) { notesblok[aktivSpillerNr].TrePar = point; undoInfo.Punkt = "Tre Par"; }
+      if (punktNr == 10) { notesblok[aktivSpillerNr].TreEns = point; undoInfo.Punkt = "Tre Ens"; }
+      if (punktNr == 11) { notesblok[aktivSpillerNr].FireEns = point; undoInfo.Punkt = "Fire Ens"; }
+      if (punktNr == 12) { notesblok[aktivSpillerNr].ToGangeTreEns = point; undoInfo.Punkt = "To Gange Tre Ens"; }
+      if (punktNr == 13) { notesblok[aktivSpillerNr].Lille = point; undoInfo.Punkt = "Lille"; }
+      if (punktNr == 14) { notesblok[aktivSpillerNr].Stor = point; undoInfo.Punkt = "Stor"; }
+      if (punktNr == 15) { notesblok[aktivSpillerNr].Royal = point; undoInfo.Punkt = "Royal"; }
+      if (punktNr == 16) { notesblok[aktivSpillerNr].Hus = point; undoInfo.Punkt = "Hus"; }
+      if (punktNr == 17) { notesblok[aktivSpillerNr].Chancen = point; undoInfo.Punkt = "Chancen"; }
+      if (punktNr == 18) { notesblok[aktivSpillerNr].Yatzy = point; undoInfo.Punkt = "Yatzy"; }
+
+      undoInfo.PunktNr = punktNr; // Kan jeg bare bruge punktNr direkte frem for at bruge det fra undo objektet??? Jeg har gjort det herunder uden problemer
+      undoInfo.Point = point;
+
+      if (point >= 0) // Så har spilleren indtastet noget (nyt) på notesblokken(er muligvis ikke nødvendigt når jeg har booleanen spillerenHarIndtastetPoint i if betingelsen længere oppe)
+      {
+        undoInfo.UndoButtonText = "  <button onclick=\"skrivPaaNotesblok(" + punktNr + "," + (-1) + ")\">Fortryd " + point + " på " + undoInfo.Punkt + "</button>" + "<br>";
+        spillerenHarIndtastetPoint = true;   // Så fremt at der ikke er andet end spillerens indtastning der kalder denne funktion, så kan jeg bruge den til at opdatere den boolean der holder styr på om den aktive spiller har foretaget sin indtastning og herefter fjerne muligheden for at indtaste på flere punkter den pågældende tur 
+      }
+      //} // slut på if betingelsen, der skal blokere for at man kan indtaste point på flere punkter
+      else // Så er denne metode kaldt af spillerens tryk på undo knappen
+      //  if (spillerenHarIndtastetPoint && point == -1) // når der trykkes på f kaldes denne metode med undoInfo.punktNr og -1, det samme sker ved tryk på fortryd knappen som genereres herover
+      { // Så er denne metode kaldt af spillerens tryk på undo knappen
+        undoInfo.UndoButtonText = "";
+        spillerenHarIndtastetPoint = false;
+      }
+
+      udskrivNotesblok();
+      turnFocusToRollDiceButton();  // **** Denne linie er et forsøg på at undgå den fejl, hvor man skrev på notesblokken i stedet for at vælge hvilke terninger man gerne ville holde, men jeg kunne ikke genskabe fejlen og heller ikke se om denne linie rent faktisk løste problemet
+    }  // slut på skrivPaaNotesblok funktionen
+
+
+
+    function beregnEnere() {
+      return resultat.Enere * 1;
+    }
+
+    function beregnToere() {
+      return resultat.Toere * 2;
+    }
+
+    function beregnTreere() {
+      return resultat.Treere * 3;
+    }
+
+    function beregnFireere() {
+      return resultat.Fireere * 4;
+    }
+
+    function beregnFemere() {
+      return resultat.Femere * 5;
+    }
+
+    function beregnSeksere() {
+      return resultat.Seksere * 6;
+    }
+
+    function beregnPar() {
+      if (resultat.Enere >= 2 || resultat.Toere >= 2 || resultat.Treere >= 2 || resultat.Fireere >= 2 || resultat.Femere >= 2 || resultat.Seksere >= 2) { // Så er der i hvert fald et par og herfra skal så vælges det største
+        if (resultat.Seksere >= 2) {
+          return 12;
+        }
+        else {
+          if (resultat.Femere >= 2) {
+            return 10;
+          }
+          else {
+            if (resultat.Fireere >= 2) {
+              return 8;
+            }
+            else {
+              if (resultat.Treere >= 2) {
+                return 6;
+              }
+              else {
+                if (resultat.Toere >= 2) {
+                  return 4;
+                }
+                else {
+                  if (resultat.Enere >= 2) {
+                    return 2;
+                  }
+                  else {
+                    return 0;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      else {
+        return 0;
+      }
+    }
+    // med de indre indlejrede if'er, så kunne den ydre if betingelse nok droppes, men så skal man tjekke for par med Enere inden der returneres 2
+
+    function beregnToPar() {
+      return beregnNPar(2);
+    }
+
+    function beregnTrePar() {
+      return beregnNPar(3);
+    }
+
+
+    function beregnNPar(n) {
+      var nPairs = 0;
+      var PairValueArray = [0, 0, 0];
+
+      for (let i = 0; i < resultArray.length; i++) {
+        if (resultArray[i] >= 2) {
+          nPairs += 1;
+          PairValueArray[nPairs - 1] = (i + 1) * 2; // faceValue = i+1
+        }
+      }
+
+      if (n == 1 && nPairs >= 1) // Værdien af et evt største par efterspørges og med nPairs >= 1 tjekkes der at der er et par 
+      {
+        return Math.max(PairValueArray[2], Math.max(PairValueArray[1], PairValueArray[0])); // Giver værdien af det største par
+      }
+      else {
+        if (n == 2 && nPairs >= 2) {
+          return Math.max((PairValueArray[1] + PairValueArray[0]), (PairValueArray[1] + PairValueArray[2])); // Giver værdien af de to største par    
+
+        }
+        else {
+          if (n == 3 && nPairs >= 3) {
+            return PairValueArray[2] + PairValueArray[1] + PairValueArray[0]; // Giver værdien af 3 par
+          }
+          else { // Den sidste her er til at finde det mindste af 2 par, som bruges til at beregne værdien af et hus. Knapt så elegant at det er her, med n == 4.
+            if (n == 4 && nPairs == 2) {
+              return Math.min(PairValueArray[1], PairValueArray[0]); // Jeg ser bort fra PairValueArray[2], da der maks kan være to par, hvis der er et hus, men kan det gøres mere elegant? Bemærk at da jeg bruger Math.min, så vil den vælge nullet i PairValueArray[2] fremfor den mindste værdi af de to par der er gemt i de to forrige indexer/pladser i arrayet
+            }
+            else {
+              return 0; // er det det rigtige sted???
+            }
+          }
+        }
+      }
+    }
+
+
+    function beregnTreEns() {
+      return beregnNGangeTreEns(1);
+    }
+
+    function beregnToGangeTreEns() {
+      return beregnNGangeTreEns(2);
+    }
+
+
+    function beregnNGangeTreEns(n) {
+      var nTriples = 0;
+      var TripleValueArray = [0, 0];
+
+
+      for (let i = 0; i < resultArray.length; i++) {
+        if (resultArray[i] >= 3) {
+          nTriples += 1;
+          TripleValueArray[nTriples - 1] = (i + 1) * 3; // faceValue = i+1
+        }
+      }
+
+      if (n == 1 && nTriples >= 1) // Værdien af den evt største triple efterspørges og med nTriples >= 1 tjekkes der at der er et trippel 
+      {
+        return Math.max(TripleValueArray[1], TripleValueArray[0]); // Giver værdien af den største trippel
+      }
+      else {
+        if (n == 2 && nTriples >= 2) // større end ikke nødvendigt med 6 terninger
+        {
+          return TripleValueArray[1] + TripleValueArray[0]; // Giver værdien af de to største triples    
+        }
+        else {
+          return 0; // er det det rigtige sted???
+        }
+      }
+
+
+    }
+
+    function beregnFireEns() {
+      if (resultat.Enere >= 4 || resultat.Toere >= 4 || resultat.Treere >= 4 || resultat.Fireere >= 4 || resultat.Femere >= 4 || resultat.Seksere >= 4) {  // Så er der 4 ens 
+        if (resultat.Seksere >= 4) {
+          return 4 * 6;
+        }
+        else {
+          if (resultat.Femere >= 4) {
+            return 4 * 5;  // note man kunne lave et femmer objekt, der kan svare hvor mange der er og om der er 3 eller 4 ens eller yatzy
+          }
+          else {
+            if (resultat.Fireere >= 4) {
+              return 4 * 4;
+            }
+            else {
+              if (resultat.Treere >= 4) {
+                return 4 * 3;
+              }
+              else {
+                if (resultat.Toere >= 4) {
+                  return 4 * 2;
+                }
+                else {
+                  if (resultat.Enere >= 4) {
+                    return 4 * 1;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      else { return 0; }
+    }
+
+
+
+    function beregnLille() {
+      if (resultat.Enere >= 1 && resultat.Toere >= 1 && resultat.Treere >= 1 && resultat.Fireere >= 1 && resultat.Femere >= 1) { return 15; }
+      else { return 0; }
+    }
+
+    function beregnStor() {
+      if (resultat.Toere >= 1 && resultat.Treere >= 1 && resultat.Fireere >= 1 && resultat.Femere >= 1 && resultat.Seksere >= 1) { return 20; }
+      else { return 0; }
+    }
+
+    function beregnRoyal() {
+      if (resultat.Enere == 1 && resultat.Toere == 1 && resultat.Treere == 1 && resultat.Fireere == 1 && resultat.Femere == 1 && resultat.Seksere == 1) { return 30; }
+      else { return 0; }
+    }
+
+    function beregnHus() {
+      // Brug beregnNPar(2) og beregnTreEns() hvor et positivt resultat fra begge indikerer at der er et hus, herefter skal værdien bestemmes
+      // Tag herefter det største trippel(der kan jo være 2x3ens) og det mindste af de 2 par, så skulle man gerne have værdien af huset
+
+      if (beregnNPar(2) > 0 && beregnTreEns() > 0)  // Så er der et hus
+      {
+        return ((beregnTreEns() / 3) + beregnNPar(2));  //beregnNPar(4));  <-- kan måske slettes
+      }
+      else {
+        return 0;
+      }
+    }
+
+
+    function beregnChancen() {
+      return d1 + d2 + d3 + d4 + d5 + d6;
+    }
+
+    function beregnYatzy() {
+      if (d1 == d2 && d2 == d3 && d3 == d4 && d4 == d5 && d5 == d6) {
+        if (d1 == 1) {
+          return 100;
+        }
+        else {
+          if (d1 != 0) {
+            return d1 * 6 + 50;
+          }
+          else { return 0; }
+        }
+      }
+      else {
+        return 0;
+      }
+    }
+
+
+
+
+    function makeButton(punktNr, punkt, point) {
+      //  console.log("Det er i dag et solskinsvejr")
+      return "  <button onclick=\"skrivPaaNotesblok(" + punktNr + "," + point + ")\">Skriv " + point + " på " + punkt + "</button>" + "<br>";
+    }
+
+    function toggleHoldAllDice(holdAll) {
+      if (holdAll) {
+        holdDieOne = holdDieTwo = holdDieThree = holdDieFour = holdDieFive = holdDieSix = true;
+        writeHoldingStatusToScreen();
+      }
+      else {
+        holdDieOne = holdDieTwo = holdDieThree = holdDieFour = holdDieFive = holdDieSix = false;
+        writeHoldingStatusToScreen();
+      }
+    }
+
+
+    function changePlayer() {
+      spillerenHarIndtastetPoint = false;
+      toggleHoldAllDice(false);
+      aktivSpillerNr = (aktivSpillerNr + 1) % (antalSpillere);
+      resterendeSlag = antalSlagPrSpiller;
+      slag.innerHTML = "Slag: " + resterendeSlag;
+      d1 = d2 = d3 = d3 = d4 = d5 = d6 = 0;
+      diceArray = [d1, d2, d3, d4, d5, d6];
+      resetResultat();
+      writeHoldingStatusToScreen();
+      undoInfo.UndoButtonText = "";  // dette skulle gerne slette den tidligere spillers fortryd knap
+      document.getElementById("status").innerHTML = "";
+      udskrivNotesblok();
+      autoSave(); // her skal notesblokAutosave() kaldes
+      turnFocusToRollDiceButton();
+
+      kopierTalFraNotesblokTilNotesblokTalArray(); // test ***** Er det her stadig en test eller skal den være her???? ********'
+    }
+
+
+    function toggleButtonDisapear() {
+      knapperSkalForsvindeEfterIndtastning = !(knapperSkalForsvindeEfterIndtastning);
+      udskrivNotesblok();
+      turnFocusToRollDiceButton();
+    }
+
+    function toggleVisTotal() {
+      visTotal = !(visTotal);
+      if (visTotal) {
+        document.getElementById("visTotalKnappen").innerHTML = "Vis ikke total";
+        udskrivNotesblok();
+      }
+      else {
+        document.getElementById("visTotalKnappen").innerHTML = "Vis total";
+        udskrivNotesblok();
+      }
+      turnFocusToRollDiceButton();
+    }
+
+    function changePlayerAndRollDice() {
+      changePlayer();
+      rollDice();
+      turnFocusToRollDiceButton();
+    }
+
+    function turnFocusToRollDiceButton() {
+      document.getElementById("rollDiceButton").focus();
+    }
+
+
+    function addRoll()  // Man kunne bekræfte det med at spørge den anden spiller om vedkommende er enig
+    {
+      resterendeSlag++;
+      slag.innerHTML = "Slag: " + resterendeSlag;
+      turnFocusToRollDiceButton();
+    }
+
+    function beregnPlusMinusBonus(spillerensNummer) {
+      let iPlusEllerMinus = 0;
+      // For hvert punkt fra og med Enere til Seksere skal der tjekkes at der står noget andet end -1 og hvis der gør dette skal der tjekkes om der er mere eller mindre end 4xEnere-Seksere
+
+      if (notesblok[spillerensNummer].Enere > -1) {
+        iPlusEllerMinus += notesblok[spillerensNummer].Enere - 4;
+      }
+      if (notesblok[spillerensNummer].Toere > -1) {
+        iPlusEllerMinus += notesblok[spillerensNummer].Toere - 8;
+      }
+      if (notesblok[spillerensNummer].Treere > -1) {
+        iPlusEllerMinus += notesblok[spillerensNummer].Treere - 12;
+      }
+      if (notesblok[spillerensNummer].Fireere > -1) {
+        iPlusEllerMinus += notesblok[spillerensNummer].Fireere - 16;
+      }
+      if (notesblok[spillerensNummer].Femere > -1) {
+        iPlusEllerMinus += notesblok[spillerensNummer].Femere - 20;
+      }
+      if (notesblok[spillerensNummer].Seksere > -1) {
+        iPlusEllerMinus += notesblok[spillerensNummer].Seksere - 24; // I stedet for hardcodede kan man bruge en variabel med hvor mange der skal være af de enkelte faceValues og gange med den pågældende faceValue
+      }
+
+      return iPlusEllerMinus;
+    }
+
+
+    function hentTalFraFormularer() {
+      let a = parseInt(document.getElementById("inputTalEt").value); // hvorfor er parseInt nødvendig, når jeg jo henter værdien af et number inputfelt ?????
+      let b = parseInt(document.getElementById("inputTalTo").value);
+      skrivPaaNotesblok(a, b);
+      turnFocusToRollDiceButton();
+    }
+
+
+    // Denne funktion der bruges til at rette et fejlagtigt tal på notesblokken kan også bruges hvis en spiller ønsker at spille analogt
+    function retFejlPaaNotesblok() {
+      if (!(spillerErVedAtRetteFejlPaaNotesblok)) {
+        spillerErVedAtRetteFejlPaaNotesblok = true;
+
+        document.getElementById("fejlRetningsBlokDiven").innerHTML = "<input type=\"number\" id=\"inputTalEt\" value=\"1\"><input type=\"number\" id=\"inputTalTo\" value=\"2\"><button onclick=\"hentTalFraFormularer()\">Sæt tal ind</button><button type=\"button\" id=\"myBtn\" onclick=\"myFunctionTo()\">Change the width of this button</button></div>";
+        document.getElementById("retFejlPaaNotesblokButton").innerHTML = "Afslut Ret På Notesblok";
+
+        // Jeg fjerner EventListenerne, så man ikke får givet bægeret videre, når man trykker backspace, mens man retter tallene i inputfelterne
+        document.removeEventListener("keydown", keyDownHandler, false);
+        document.removeEventListener("keyup", keyUpHandler, false);
+
+        udskrivNotesblok();
+
+      }
+      else {
+        spillerErVedAtRetteFejlPaaNotesblok = false;
+
+        document.getElementById("fejlRetningsBlokDiven").innerHTML = "";
+        document.getElementById("retFejlPaaNotesblokButton").innerHTML = "Ret På Notesblok";
+        turnFocusToRollDiceButton();
+
+        document.addEventListener("keydown", keyDownHandler, false);
+        document.addEventListener("keyup", keyUpHandler, false);
+
+        udskrivNotesblok();
+
+      }
+
+    }
+
+
+
+    function hentTekstFraFormularer() {
+      let j = 2;  // Hvorfor????
+
+      for (let i = 0; i < antalSpillere; i += 1) {
+        notesblok[i].Spiller = document.getElementById("inputTekst" + i).value;
+      }
+
+    }
+
+
+    function hentAntalSpillereFraFormular() {
+      let antalSpillereInput = document.getElementById("inputAntalSpillere").value;
+      let deltaSpillere = antalSpillereInput - antalSpillere;
+
+
+      // Hvis antallet af spillere stiger, så skal der tilføjes nye spillere til notesblok og notesblokTalArray
+      if (deltaSpillere > 0) {
+        for (let i = 0; i < deltaSpillere; i += 1) {
+          notesblok.push(new Player("Player " + (antalSpillere + i + 1))); // *** Bliver tallet rent faktisk ændret til en tekststreng???
+          notesblokTalArray.push(new Array(19));
+        }
+      }
+      // Hvis antallet af spillere falder, så skal der fjernes eksisterende spillere fra notesblok og notesblokTalArray og evt andet??
+      if (deltaSpillere < 0) {
+        for (let i = deltaSpillere; i < 0; i += 1) {
+          notesblok.pop();
+          notesblokTalArray.pop();
+        }
+      }
+      antalSpillere = antalSpillereInput;
+
+      retNavneOgAntalSpillere();
+    }
+
+
+    function retNavneOgAntalSpillere() {
+      if (!(spillerErVedAtRetteNavneOgAntalSpillere)) {
+        spillerErVedAtRetteNavneOgAntalSpillere = true;
+
+        let HTMLTekst = "";
+
+        // Felt til at rette antallet af spillere:
+        HTMLTekst += "Antal spillere: <input type=\"number\" id=\"inputAntalSpillere" + "\" value=" + antalSpillere + ">"; // Skal der \" før og efter antalSpillere???? ***
+        HTMLTekst += "<button onclick=\"hentAntalSpillereFraFormular()\">Gem nyt antal spillere</button><br>";
+
+        // Felter til at rette spillernes navne:
+        for (let i = 0; i < antalSpillere; i += 1) {
+          HTMLTekst += "<input type=\"text\" id=\"inputTekst" + i + "\" value=\"" + notesblok[i].Spiller + "\">";
+
+        }
+        HTMLTekst += "<button onclick=\"hentTekstFraFormularer()\">Gem navne</button>   ";
+
+
+        document.getElementById("navneOgAntalSpillerBlokDiven").innerHTML = HTMLTekst;
+        document.getElementById("retNavneOgAntalSpillereButton").innerHTML = "Afslut ret navne og antal spillere";
+
+
+
+        // Jeg fjerner EventListenerne, så man ikke får givet bægeret videre, når man trykker backspace, mens man retter teksten i inputfelterne
+        document.removeEventListener("keydown", keyDownHandler, false);
+        document.removeEventListener("keyup", keyUpHandler, false);
+
+      }
+      else {
+        spillerErVedAtRetteNavneOgAntalSpillere = false;
+
+        document.getElementById("navneOgAntalSpillerBlokDiven").innerHTML = "";
+        document.getElementById("retNavneOgAntalSpillereButton").innerHTML = "Ret navne og antal spillere";
+        turnFocusToRollDiceButton();
+
+        document.addEventListener("keydown", keyDownHandler, false);
+        document.addEventListener("keyup", keyUpHandler, false);
+      }
+      udskrivNotesblok();
+    }
+
+    let visWebscrapingData = true;
+
+    function toggleWebscrapingData() {
+      visWebscrapingData = !(visWebscrapingData);
+      if (visWebscrapingData) {
+        document.getElementById("visWebscrapingDataButton").innerHTML = "Vis ikke Webscraping Data";
+        document.getElementById("webscrapingDiv").style.display = "block";
+        makeJSONForWebscraping() // midl at den er her
+      }
+      else {
+        document.getElementById("visWebscrapingDataButton").innerHTML = "Vis Webscraping Data";
+        document.getElementById("webscrapingDiv").style.display = "none";
+      }
+      udskrivNotesblok();
+      turnFocusToRollDiceButton();
+    }
+
+    function toggleVisGenvejstaster() {
+      visGenvejstaster = !(visGenvejstaster);
+      if (visGenvejstaster) {
+        document.getElementById("visGenvejstasterButton").innerHTML = "Vis ikke genvejstaster";
+        document.getElementById("rollDiceButton").innerHTML = "Kast terninger (space)";
+        document.getElementById("changePlayerButton").innerHTML = "Giv bæger videre (backspace)";
+        document.getElementById("changePlayerAndRollDiceButton").innerHTML = "Giv bæger videre og kast (insert)";
+
+        let HTMLTekst = "<h3>Yderligere genvejstaster:</h3>";
+        HTMLTekst += "<p>";
+        HTMLTekst += "Når der er resterende slag tilbage: <br>";
+        HTMLTekst += "(1) hold/hold ikke på terning 1 <br>";
+        HTMLTekst += "(2) hold/hold ikke på terning 2 <br>";
+        HTMLTekst += "(3) hold/hold ikke på terning 3 <br>";
+        HTMLTekst += "(4) hold/hold ikke på terning 4 <br>";
+        HTMLTekst += "(5) hold/hold ikke på terning 5 <br>";
+        HTMLTekst += "(6) hold/hold ikke på terning 6 <br>";
+        HTMLTekst += "Når der er IKKE er resterende slag tilbage, så vil tryk på (1 til 6) skrive point på ens notesblok ud for enere til seksere.<br>";
+        HTMLTekst += "(" + altKnap + " + 1) hold/hold ikke på alle terninger med 1 <br>";
+        HTMLTekst += "(" + altKnap + " + 2) hold/hold ikke på alle terninger med 2 <br>";
+        HTMLTekst += "(" + altKnap + " + 3) hold/hold ikke på alle terninger med 3 <br>";
+        HTMLTekst += "(" + altKnap + " + 4) hold/hold ikke på alle terninger med 4 <br>";
+        HTMLTekst += "(" + altKnap + " + 5) hold/hold ikke på alle terninger med 5 <br>";
+        HTMLTekst += "(" + altKnap + " + 6) hold/hold ikke på alle terninger med 6 <br>";
+        HTMLTekst += "<p>";
+
+        document.getElementById("genvejstasterDiven").innerHTML = HTMLTekst;  // z + 1: Vælg alle terninger med 1 </p>";
+      }
+      else {
+        document.getElementById("visGenvejstasterButton").innerHTML = "Vis genvejstaster";
+        document.getElementById("rollDiceButton").innerHTML = "Kast terninger";
+        document.getElementById("changePlayerButton").innerHTML = "Giv bæger videre";
+        document.getElementById("changePlayerAndRollDiceButton").innerHTML = "Giv bæger videre og kast";
+
+        document.getElementById("genvejstasterDiven").innerHTML = "";
+      }
+      udskrivNotesblok();
+      turnFocusToRollDiceButton();
+    }
+
+
+
+    var dataReceivedFromMenuPage = localStorage['objectToPassDataSendt'];
+    var navneArray = [];
+
+    console.log("dataReceivedFromMenuPage: " + dataReceivedFromMenuPage);
+
+    function loadData() {
+      antalSpillere = parseInt(localStorage['objectToPassAntalSpillere']);
+
+
+      addPlayers();
+
+      for (let i = 0; i < antalSpillere; i += 1) {
+
+        navneArray.push(localStorage['objectToPassNavn' + i]);
+
+        notesblok[i].Spiller = navneArray[i];
+      }
+
+
+      continiueStartedGame();  // Skal kun køre hvis spilleren ønsker at fortsætte et allerede startet spil(som er blevet afbrudt ved genindlæsning af siden)
+
+    }
+
+    var thereIsASaveGameAndPlayerWantsItLoaded = false;
+
+    function autoSave() {
+      // Funktionen skal kaldes af changePlayer funktionen
+      // For hver spiller objekt skal den køre de enkelte punkter igennem og gemme dem enkeltvis
+
+      localStorage.setItem("thereIsASaveGameAndPlayerWantsItLoaded", true);
+
+      for (let i = 0; i < antalSpillere; i += 1) {
+        localStorage.setItem("EnereSpillerNr" + i, notesblok[i].Enere);
+        console.log("game saved " + localStorage.getItem("EnereSpillerNr" + i));
+        localStorage.setItem("ToereSpillerNr" + i, notesblok[i].Toere);
+        localStorage.setItem("TreereSpillerNr" + i, notesblok[i].Treere);
+        localStorage.setItem("FireereSpillerNr" + i, notesblok[i].Fireere);
+        localStorage.setItem("FemereSpillerNr" + i, notesblok[i].Femere);
+        localStorage.setItem("SeksereSpillerNr" + i, notesblok[i].Seksere);
+
+        localStorage.setItem("ParSpillerNr" + i, notesblok[i].Par);
+        localStorage.setItem("ToParSpillerNr" + i, notesblok[i].ToPar);
+        localStorage.setItem("TreParSpillerNr" + i, notesblok[i].TrePar);
+        localStorage.setItem("TreEnsSpillerNr" + i, notesblok[i].TreEns);
+        localStorage.setItem("FireEnsSpillerNr" + i, notesblok[i].FireEns);
+        localStorage.setItem("ToGangeTreEnsSpillerNr" + i, notesblok[i].ToGangeTreEns);
+
+        localStorage.setItem("LilleSpillerNr" + i, notesblok[i].Lille);
+        localStorage.setItem("StorSpillerNr" + i, notesblok[i].Stor);
+        localStorage.setItem("RoyalSpillerNr" + i, notesblok[i].Royal);
+        localStorage.setItem("HusSpillerNr" + i, notesblok[i].Hus);
+        localStorage.setItem("ChancenSpillerNr" + i, notesblok[i].Chancen);
+        localStorage.setItem("YatzySpillerNr" + i, notesblok[i].Yatzy);
+
+        localStorage.setItem("d1SpillerNr" + i, d1);
+        localStorage.setItem("d2SpillerNr" + i, d2);
+        localStorage.setItem("d3SpillerNr" + i, d3);
+        localStorage.setItem("d4SpillerNr" + i, d4);
+        localStorage.setItem("d5SpillerNr" + i, d5);
+        localStorage.setItem("d6SpillerNr" + i, d6);
+
+        localStorage.setItem("resterendeSlagSpillerNr" + i, resterendeSlag);
+
+      }
+
+
+    }
+
+
+    // Vær opmærksom på at alt i denne metode hentes ind som strings og undersøg om der skal bruges parseInt for at undgå afledte problemer ******************
+    function continiueStartedGame() {
+
+      let thereIsABlaBlaString = localStorage.getItem("thereIsASaveGameAndPlayerWantsItLoaded");
+
+      // findes der en parseBool metode der kan bruges i stedet??? *******
+      if (thereIsABlaBlaString == "true") { thereIsASaveGameAndPlayerWantsItLoaded = true }
+      // else
+      if (thereIsABlaBlaString == "false") { thereIsASaveGameAndPlayerWantsItLoaded = false }
+
+
+      if (thereIsASaveGameAndPlayerWantsItLoaded) {
+
+        for (let i = 0; i < antalSpillere; i += 1) {
+          notesblok[i].Enere = parseInt(localStorage.getItem("EnereSpillerNr" + i));
+
+
+          notesblok[i].Toere = parseInt(localStorage.getItem("ToereSpillerNr" + i));
+          notesblok[i].Treere = parseInt(localStorage.getItem("TreereSpillerNr" + i));
+          notesblok[i].Fireere = parseInt(localStorage.getItem("FireereSpillerNr" + i));
+          notesblok[i].Femere = parseInt(localStorage.getItem("FemereSpillerNr" + i));
+          notesblok[i].Seksere = parseInt(localStorage.getItem("SeksereSpillerNr" + i));
+
+          notesblok[i].Par = parseInt(localStorage.getItem("ParSpillerNr" + i));
+          notesblok[i].ToPar = parseInt(localStorage.getItem("ToParSpillerNr" + i));
+          notesblok[i].TrePar = parseInt(localStorage.getItem("TreParSpillerNr" + i));
+          notesblok[i].TreEns = parseInt(localStorage.getItem("TreEnsSpillerNr" + i));
+          notesblok[i].FireEns = parseInt(localStorage.getItem("FireEnsSpillerNr" + i));
+          notesblok[i].ToGangeTreEns = parseInt(localStorage.getItem("ToGangeTreEnsSpillerNr" + i));
+
+          notesblok[i].Lille = parseInt(localStorage.getItem("LilleSpillerNr" + i));
+          notesblok[i].Stor = parseInt(localStorage.getItem("StorSpillerNr" + i));
+          notesblok[i].Royal = parseInt(localStorage.getItem("RoyalSpillerNr" + i));
+          notesblok[i].Hus = parseInt(localStorage.getItem("HusSpillerNr" + i));
+          notesblok[i].Chancen = parseInt(localStorage.getItem("ChancenSpillerNr" + i));
+          notesblok[i].Yatzy = parseInt(localStorage.getItem("YatzySpillerNr" + i));
+
+
+          // Måske skal der laves en seperat diceAutosave, som kaldes efter hvert rul og en seperat notesblokAutosave, som kaldes af changePlayer
+          d1 = parseInt(localStorage.getItem("d1SpillerNr" + i));
+          d2 = parseInt(localStorage.getItem("d2SpillerNr" + i));
+          d3 = parseInt(localStorage.getItem("d3SpillerNr" + i));
+          d4 = parseInt(localStorage.getItem("d4SpillerNr" + i));
+          d5 = parseInt(localStorage.getItem("d5SpillerNr" + i));
+          d6 = parseInt(localStorage.getItem("d6SpillerNr" + i));
+
+          resterendeSlag = parseInt(localStorage.getItem("resterendeSlagSpillerNr" + i));
+
+          // Bliver det her overskrevet et andet sted eller er det fordi at man er nød til at kaste terningerne før at det kan ses
+          die1.innerHTML = d1;
+          die2.innerHTML = d2;
+          die3.innerHTML = d3;
+          die4.innerHTML = d4;
+          die5.innerHTML = d5;
+          die6.innerHTML = d6;
+
+          slag.innerHTML = "Slag: " + resterendeSlag;
+
+        }
+
+      }
+      else { }
+
+      // Sletning af de oprettede key-values kan ske ved når spillet er slut eller fanebladet lukkes(Hvis dette ske ved en fejl vil dette gøre at man ikke kan gendanne sit spil)
+      // Det samme gælder objectToPass værdierne
+    }
+
+    // Find ud af præcis hvad der skal med i JSON objektet og hvilke funktioner der skal kalde denne funktion
+    // Kig på hvad der bliver gemt og evt lav ny save funktion med det samme eller også kan denne funktion måske genbruges til en ny save
+
+    function makeJSONForWebscraping() {
+
+      let holdDieList = [holdDieOne, holdDieTwo, holdDieThree, holdDieFour, holdDieFive, holdDieSix]
+
+      let dataForTransfer = [notesblok, holdDieList, diceArray, resterendeSlag, aktivSpillerNr]
+
+      // lav dataen til en JSON
+      let dataSomJSON = JSON.stringify(dataForTransfer);
+
+      document.getElementById("webscrapingDiv").innerHTML = dataSomJSON;
+
+      return dataSomJSON
+
+    }
+
+    function goToOtherSite() {
+      document.location = 'http://localhost:5000/'
+    }
+
+    function changeInputField() {
+      //document.getElementById('say').value = "Greetings"
+
+      document.getElementById('dataForTransferField').value = makeJSONForWebscraping()
+    }
+
+    function toggleStartNytSpilMenu() {
+      console.log("startMenu knap trykket")
+      visAntalSpillereInput();
+    }
+
+
+
+    function visAntalSpillereInput() {
+      let HTMLTekst = "";
+
+      // Felt til at rette antallet af spillere:
+      HTMLTekst += "Antal spillere: <input type=\"number\" id=\"inputAntalSpillere" + "\" value=" + antalSpillere + "><br><br>";
+
+      HTMLTekst += "<button onclick=\"hentAntalSpillereFraFormular()\">Gem nyt antal spillere</button><br><br>";
+
+      HTMLTekst += "<br><button onclick=\"sendDataPogT()\">P og T</button><br><br>";
+
+      document.getElementById("antalSpillerBlokDiven").innerHTML = HTMLTekst;
+    }
+
+
+    function hentAntalSpillereFraFormular() {
+      let antalSpillereInput = document.getElementById("inputAntalSpillere").value;
+      console.log("antalSpillereInput: " + antalSpillereInput);
+      localStorage.setItem('objectToPass', antalSpillereInput);
+
+      antalSpillere = antalSpillereInput;
+
+      visNavneInput();
+    }
+
+    function visNavneInput() {
+      let HTMLTekst = "";
+
+      // Felter til at rette spillernes navne:
+      for (let i = 0; i < antalSpillere; i += 1) {
+        HTMLTekst += "Spiller " + (i + 1) + "'s navn: ";
+        HTMLTekst += "<input type=\"text\" id=\"inputTekst" + i + "\"" + "value=\"Spiller " + (i + 1) + "\"" + "><br>";
+        console.log("inde i for løkken")
+      }
+      HTMLTekst += "<br><button onclick=\"hentTekstFraFormularer()\">Start spil</button><br><br>";
+
+      document.getElementById("navneDiven").innerHTML = HTMLTekst;
+
+    }
+
+
+    function hentTekstFraFormularer() {
+
+      for (let i = 0; i < antalSpillere; i += 1) {
+        navneArray.push(document.getElementById("inputTekst" + i).value);
+        console.log(navneArray[i]);
+      }
+
+      sendData();
+
+    }
+
+    function sendData() {
+      localStorage.setItem('objectToPassDataSendt', true);
+      localStorage.setItem('objectToPassAntalSpillere', antalSpillere);
+      localStorage.setItem('objectToPassNavneArrayet', navneArray);
+
+      for (let i = 0; i < antalSpillere; i += 1) {
+        localStorage.setItem('objectToPassNavn' + i, navneArray[i]);
+      }
+
+      startYatzy(false);
+      //localStorage.setItem("thereIsASaveGameAndPlayerWantsItLoaded", false);
+      //document.location='Yatzy.html';
+
+    }
+
+    function sendDataPogT() {
+      navneArray = ["T", "P"];
+      antalSpillere = 2;
+      localStorage.setItem('objectToPassDataSendt', true);
+      localStorage.setItem('objectToPassAntalSpillere', antalSpillere);
+      localStorage.setItem('objectToPassNavneArrayet', navneArray);
+
+      for (let i = 0; i < antalSpillere; i += 1) {
+        localStorage.setItem('objectToPassNavn' + i, navneArray[i]);
+      }
+
+      startYatzy(false);
+      //  document.location='Yatzy.html';
+
+    }
+
+
+    function startYatzy(continueGame) {
+      if (continueGame) {
+        localStorage.setItem("thereIsASaveGameAndPlayerWantsItLoaded", true);
+      }
+      else {
+        localStorage.setItem("thereIsASaveGameAndPlayerWantsItLoaded", false);
+      }
+
+      //document.location='Yatzy.html';
+      loadData()
+    }
+
+
+
+  </script>
+</head>
+
+<body onload=loadData()>
+
+  <div id="spilDiven">
+
+    <div id="ydreDivDie1">
+      <div id="die1" onclick="toggleHoldDieOne()" class="dice">0</div>
+    </div>
+    <div id="ydreDivDie2">
+      <div id="die2" onclick="toggleHoldDieTwo()" class="dice">0</div>
+    </div>
+    <div id="ydreDivDie3">
+      <div id="die3" onclick="toggleHoldDieThree()" class="dice">0</div>
+    </div>
+    <div id="ydreDivDie4">
+      <div id="die4" onclick="toggleHoldDieFour()" class="dice">0</div>
+    </div>
+    <div id="ydreDivDie5">
+      <div id="die5" onclick="toggleHoldDieFive()" class="dice">0</div>
+    </div>
+    <div id="ydreDivDie6">
+      <div id="die6" onclick="toggleHoldDieSix()" class="dice">0</div>
+    </div>
+
+    <button id="rollDiceButton" onclick="rollDice();this.blur();">Kast terninger</button>
+    <button id="changePlayerButton" onclick="changePlayer()">Giv bæger videre</button>
+    <button id="changePlayerAndRollDiceButton" onclick="changePlayerAndRollDice()">Giv bæger videre og kast</button>
+    <p id="slag">Slag: 3</p>
+
+    <h2 id="status"></h2>
+
+    <h2 id="onHoldStatus" style="clear:left;"></h2>
+
+    <p id="notesblokId"></p>
+
+    <p id="pointFraForm"></p>
+
+
+
+    <button id="visTotalKnappen" onclick="toggleVisTotal()">Vis Total</button>
+
+    <button onclick="toggleButtonDisapear()">Vælg om knapper skal forsvinde efter indtastning</button>
+
+    <button id="tilføjEkstraKastKnappen" onclick="addRoll()">Tilføj ekstra kast</button>
+
+    <button id="retFejlPaaNotesblokButton" onclick="retFejlPaaNotesblok()">Ret På Notesblok</button>
+
+
+    <button id="visGenvejstasterButton" onclick="toggleVisGenvejstaster()">Vis genvejstaster</button>
+
+    <button id="visWebscrapingDataButton" onclick="toggleWebscrapingData()">Vis Webscraping Data</button>
+
+    <button onclick="toggleStartNytSpilMenu()">Start et nyt spil</button>
+
+    <button onclick="goToOtherSite()">Gå til anden side</button>
+
+    <button onclick="changeInputField()">Prepare data for transfer</button>
+
+    <!-- <form action="" method="post">
+      <button name="foo" value="upvote">Upvote</button>
+    </form> -->
+
+    <form action="http://localhost:5000/hello" method="POST">
+      <!-- <form action="" method="POST"></form> -->
+      <!-- <div>
+      <label for="say">What greeting do you want to say?</label>
+      <input name="say" id="say" value="Hi">
+    </div> -->
+      <div>
+        <label for="to">Data to be transfered</label>
+        <textarea name="dataForTransferField" id="dataForTransferField" value="From Yatzy.HTML" rows="4"
+          cols="50"></textarea>
+      </div>
+      <div>
+        <button>Make HTML to be scraped</button>
+      </div>
+    </form>
+
+
+  </div> <!-- Slut på spilDiven -->
+
+  <button id="retNavneOgAntalSpillereButton" onclick="retNavneOgAntalSpillere()">Ret navne og antal spillere</button>
+
+  <div id="fejlRetningsBlokDiven"></div>
+
+  <div id="navneOgAntalSpillerBlokDiven"></div>
+
+  <div id="genvejstasterDiven"></div>
+
+  <div id="webscrapingDiv" class="webscrapingDiv"></div>
+
+  <div id="antalSpillerBlokDiven"></div>
+
+  <div id="navneDiven"></div>
+
+
+  <p id="bugText"></p>
+
+
+</body>
+
+</html>
