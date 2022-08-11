@@ -875,6 +875,69 @@
     
     */
 
+    let punktNavneListeUdenBonusOgTotal = [
+      "Enere",
+      "Toere",
+      "Treere",
+      "Fireere",
+      "Femere",
+      "Seksere",
+      "Par",
+      "ToPar",
+      "TrePar",
+      "TreEns",
+      "FireEns",
+      "ToGangeTreEns",
+      "Lille",
+      "Stor",
+      "Royal",
+      "Hus",
+      "Chancen",
+      "Yatzy",
+    ]; // "I plus eller minus" før Bonus kommer på
+
+    let punktNavneListeMedMellemrum = [
+      "Enere",
+      "Toere",
+      "Treere",
+      "Fireere",
+      "Femere",
+      "Seksere",
+      "Par",
+      "To Par",
+      "Tre Par",
+      "Tre Ens",
+      "Fire Ens",
+      "To Gange Tre Ens",
+      "Lille",
+      "Stor",
+      "Royal",
+      "Hus",
+      "Chancen",
+      "Yatzy",
+    ]; // "I plus eller minus" før Bonus kommer på
+
+    let beregnFunktionsListen = [
+      beregnEnere,
+      beregnToere,
+      beregnTreere,
+      beregnFireere,
+      beregnFemere,
+      beregnSeksere,
+      beregnPar,
+      beregnToPar,
+      beregnTrePar,
+      beregnTreEns,
+      beregnFireEns,
+      beregnToGangeTreEns,
+      beregnLille,
+      beregnStor,
+      beregnRoyal,
+      beregnHus,
+      beregnChancen,
+      beregnYatzy,
+    ];
+
 
     function udskrivNotesblok() {
 
@@ -2416,7 +2479,7 @@
       <button name="foo" value="upvote">Upvote</button>
     </form> -->
 
-    <form action="http://localhost:5000/hello" method="POST">
+    <form action="http://localhost:3000/hello" method="POST">
       <!-- <form action="" method="POST"></form> -->
       <!-- <div>
       <label for="say">What greeting do you want to say?</label>
