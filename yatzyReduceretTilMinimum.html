@@ -132,30 +132,10 @@
     <button id="visWebscrapingDataButton" onclick="toggleWebscrapingData()">Vis Webscraping Data</button>
 
     <button onclick="toggleStartNytSpilMenu()">Start et nyt spil</button>
-
+<!-- 
     <button onclick="goToOtherSite()">Gå til anden side</button>
 
-    <button onclick="changeInputField()">Prepare data for transfer</button>
-
-    <!-- <form action="" method="post">
-      <button name="foo" value="upvote">Upvote</button>
-    </form> -->
-
-    <form action="http://localhost:3000/hello" method="POST">
-      <!-- <form action="" method="POST"></form> -->
-      <!-- <div>
-      <label for="say">What greeting do you want to say?</label>
-      <input name="say" id="say" value="Hi">
-    </div> -->
-      <div>
-        <label for="to">Data to be transfered</label>
-        <textarea name="dataForTransferField" id="dataForTransferField" value="From Yatzy.HTML" rows="4"
-          cols="50"></textarea>
-      </div>
-      <div>
-        <button>Make HTML to be scraped</button>
-      </div>
-    </form>
+    <button onclick="changeInputField()">Prepare data for transfer</button> -->
 
 
   </div> <!-- Slut på spilDiven -->
@@ -180,34 +160,6 @@
 
   <script>
 
-
-    // lav backup og highscore vha nodeJS
-
-    // PBEM play by email
-
-
-    // valg af punkt med piltaster(baggrunden i tabellen kan skifte farve som en markør) 
-    // Evt prøv at tilføje en computerspiller
-    // Når man har skrevet et nummer i inputfelt 1, så markeres det felt eller den tekst hvor pointene rettes.
-    // Skriv spillernavne og highscores og evt savegames til fil vha node.js
-    // Hvordan kan jeg se at de sidste tre terninger med sikkerhed er slået, hvis jeg holder tre terninger og de sidste tre ikke ændrer sig ved et slag(det skulle jo kun ske 1 ud af ca 200 gange, men det skete 4 gange i løbet af et par spil for os)
-    // Hver enkelt spiller skal efter at have tastet sit navn kunne vælge sit sprog og al tekst bør være i nogle dataformater der er let udskiftelige, så man bare kan skrive playerLanguage[].... eller noget i den stil
-
-    // Bugs:
-    // Når et spil gendannes, så er det først når alle spillere har haft deres tur at deres bonus kommer igen, hvis de allerede havde fået den.
-    // tjek når man egentlig burde have fået bonus, altså 4 i plus, men mangler kun at slå med etterne
-
-    // Forslag: 
-    // Knap med brugsvejledning
-    // Man skal kunne se at terningerne er ved at blive kastet eller at de er kastet
-    // Man skal kunne tage et screenshot af resultatet vha en knap(Kenneth???)
-
-
-    // Kan jeg få F1 og de andre F taster til kun at virke i spillet?
-    // evt skift af farve ved navn 
-
-    // SENESTE TO DO:
-    // Prøv at brug preventDefault og liste med godkendte taster fra pianomaster js scriptet til at få shift til at virke og få den til at ignorere dobbelt space input
 
     const sanitizerOne = new Sanitizer()
 
@@ -1853,15 +1805,6 @@
 
     }
 
-    function goToOtherSite() {
-      document.location = 'http://localhost:5000/'
-    }
-
-    function changeInputField() {
-      //document.getElementById('say').value = "Greetings"
-
-      document.getElementById('dataForTransferField').value = makeJSONForWebscraping()
-    }
 
     function toggleStartNytSpilMenu() {
       console.log("startMenu knap trykket")
