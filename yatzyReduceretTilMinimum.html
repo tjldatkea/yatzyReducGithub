@@ -75,6 +75,109 @@
       /* Standard syntax */
     }
   </style>
+
+</head>
+
+<body onload=loadData()>
+
+  <div id="spilDiven">
+
+    <div id="allDiceDiv" class="prevent-select">
+      <div id="ydreDivDie1">
+        <div id="die1" class="dice">0</div>
+      </div>
+      <div id="ydreDivDie2">
+        <div id="die2" class="dice">0</div>
+      </div>
+      <div id="ydreDivDie3">
+        <div id="die3" class="dice">0</div>
+      </div>
+      <div id="ydreDivDie4">
+        <div id="die4" class="dice">0</div>
+      </div>
+      <div id="ydreDivDie5">
+        <div id="die5" class="dice">0</div>
+      </div>
+      <div id="ydreDivDie6">
+        <div id="die6" class="dice">0</div>
+      </div>
+    </div>
+
+    <button id="rollDiceButton" onclick="rollDice();this.blur();">Kast terninger</button>
+    <button id="changePlayerButton" onclick="changePlayer()">Giv bæger videre</button>
+    <button id="changePlayerAndRollDiceButton" onclick="changePlayerAndRollDice()">Giv bæger videre og kast</button>
+    <p id="slag">Slag: 3</p>
+
+    <h2 id="status"></h2>
+
+    <h2 id="onHoldStatus" style="clear:left;"></h2>
+
+    <p id="notesblokId"></p>
+
+    <p id="pointFraForm"></p>
+
+
+
+    <button id="visTotalKnappen" onclick="toggleVisTotal()">Vis Total</button>
+
+    <button onclick="toggleButtonDisapear()">Vælg om knapper skal forsvinde efter indtastning</button>
+
+    <button id="tilføjEkstraKastKnappen" onclick="addRoll()">Tilføj ekstra kast</button>
+
+    <button id="retFejlPaaNotesblokButton" onclick="retFejlPaaNotesblok()">Ret På Notesblok</button>
+
+
+    <button id="visGenvejstasterButton" onclick="toggleVisGenvejstaster()">Vis genvejstaster</button>
+
+    <button id="visWebscrapingDataButton" onclick="toggleWebscrapingData()">Vis Webscraping Data</button>
+
+    <button onclick="toggleStartNytSpilMenu()">Start et nyt spil</button>
+
+    <button onclick="goToOtherSite()">Gå til anden side</button>
+
+    <button onclick="changeInputField()">Prepare data for transfer</button>
+
+    <!-- <form action="" method="post">
+      <button name="foo" value="upvote">Upvote</button>
+    </form> -->
+
+    <form action="http://localhost:3000/hello" method="POST">
+      <!-- <form action="" method="POST"></form> -->
+      <!-- <div>
+      <label for="say">What greeting do you want to say?</label>
+      <input name="say" id="say" value="Hi">
+    </div> -->
+      <div>
+        <label for="to">Data to be transfered</label>
+        <textarea name="dataForTransferField" id="dataForTransferField" value="From Yatzy.HTML" rows="4"
+          cols="50"></textarea>
+      </div>
+      <div>
+        <button>Make HTML to be scraped</button>
+      </div>
+    </form>
+
+
+  </div> <!-- Slut på spilDiven -->
+
+  <button id="retNavneOgAntalSpillereButton" onclick="retNavneOgAntalSpillere()">Ret navne og antal spillere</button>
+
+  <div id="fejlRetningsBlokDiven"></div>
+
+  <div id="navneOgAntalSpillerBlokDiven"></div>
+
+  <div id="genvejstasterDiven"></div>
+
+  <div id="webscrapingDiv" class="webscrapingDiv"></div>
+
+  <div id="antalSpillerBlokDiven"></div>
+
+  <div id="navneDiven"></div>
+
+
+  <p id="bugText"></p>
+
+
   <script>
 
 
@@ -103,6 +206,11 @@
     // Kan jeg få F1 og de andre F taster til kun at virke i spillet?
     // evt skift af farve ved navn 
 
+    // SENESTE TO DO:
+    // Prøv at brug preventDefault og liste med godkendte taster fra pianomaster js scriptet til at få shift til at virke og få den til at ignorere dobbelt space input
+
+    const sanitizerOne = new Sanitizer()
+
     let holdDieOne = holdDieTwo = holdDieThree = holdDieFour = holdDieFive = holdDieSix = false;
     let d1 = d2 = d3 = d4 = d5 = d6 = 0;
     let diceArray; // [d1,d2,d3,d4,d5,d6] 
@@ -127,13 +235,6 @@
     let altKnap = "z"; // "alt", når den knap kan bruges
     let gameHasBegun = false;
     let altPressed = false;
-
-
-    // Skal omdøbes: Skal måske bruges til at vælge punkter med, så man kan skrive point på 
-    let rightPressed = false;
-    let leftPressed = false;
-    let upPressed = false;
-    let downPressed = false;
 
     let undoInfo =
     {
@@ -171,17 +272,15 @@
 
 
     // let notesblok = [];
-    let notesblok = new Array();
-    let notesblokTalArray = [];
+    let notesblok = new Array()
+    let notesblokTalArray = []
 
     //addPlayers(); // denne linie er nødvendig, når yatzy startes fra denne html
 
     function addPlayers() {
 
       for (let i = 0; i < antalSpillere; i++) {
-        notesblok.push(new Player("Player " + (i + 1)));
-
-
+        notesblok.push(new Player("Player " + (i + 1)))
       }
 
 
@@ -194,7 +293,6 @@
         notesblok[0].Spiller = "T";
         notesblok[1].Spiller = "P";
       }
-
     }
 
     // forsøg på at tømme skærmen og kun indstille antal spillere og skrive navne inden opstart af nyt spil
@@ -231,15 +329,22 @@
       Royal: 0,
       Hus: 0,
       Chancen: 0,
-      Yatzy: 0 //,
-    };
+      Yatzy: 0
+    }
     // Slut på variabel/objekt erklæringerne
 
 
     // disse to linier er udenfor funktionerne
-    document.addEventListener("keydown", keyDownHandler, false);
-    document.addEventListener("keyup", keyUpHandler, false);
+    document.addEventListener("keydown", keyDownHandler, false)
+    document.addEventListener("keyup", keyUpHandler, false)
 
+    // document.getElementById('ydreDivDie1').addEventListener("click", toggleHoldDieOne)
+    ydreDivDie1.addEventListener("click", toggleHoldDieOne) // Virker fint, men hvorfor, når ydreDivDie1 bare er et id på et HTML element og ikke en variabel, måske skyldes at koden først køres efter HTML'en er indlæst.
+    document.getElementById('ydreDivDie2').addEventListener("click", toggleHoldDieTwo)
+    document.getElementById('ydreDivDie3').addEventListener("click", toggleHoldDieThree)
+    document.getElementById('ydreDivDie4').addEventListener("click", toggleHoldDieFour)
+    document.getElementById('ydreDivDie5').addEventListener("click", toggleHoldDieFive)
+    document.getElementById('ydreDivDie6').addEventListener("click", toggleHoldDieSix)
 
     // Bruges denne her overhovedet
     function disableScroll() {
@@ -510,54 +615,18 @@
         altPressed = false;
         console.log("alt(z) sluppet"); // test
       }
-
     }
 
     function selectAllDiceWithChosenFaceValue(faceValueSelected) {
-      if (d1 == faceValueSelected) {
-        holdDieOne = true;
-      }
-      else {
-        holdDieOne = false;
-      }
 
-      if (d2 == faceValueSelected) {
-        holdDieTwo = true;
-      }
-      else {
-        holdDieTwo = false;
-      }
-
-      if (d3 == faceValueSelected) {
-        holdDieThree = true;
-      }
-      else {
-        holdDieThree = false;
-      }
-
-      if (d4 == faceValueSelected) {
-        holdDieFour = true;
-      }
-      else {
-        holdDieFour = false;
-      }
-
-      if (d5 == faceValueSelected) {
-        holdDieFive = true;
-      }
-      else {
-        holdDieFive = false;
-      }
-
-      if (d6 == faceValueSelected) {
-        holdDieSix = true;
-      }
-      else {
-        holdDieSix = false;
-      }
+      holdDieOne = (d1 == faceValueSelected)
+      holdDieTwo = (d2 == faceValueSelected)
+      holdDieThree = (d3 == faceValueSelected)
+      holdDieFour = (d4 == faceValueSelected)
+      holdDieFive = (d5 == faceValueSelected)
+      holdDieSix = (d6 == faceValueSelected)
 
       writeHoldingStatusToScreen();
-
     }
 
     // function toggleHoldDie(dieNumber) {
@@ -580,145 +649,57 @@
     // }
 
     function toggleHoldDieOne() {
-      if (holdDieOne) {
-        holdDieOne = false;
-        writeHoldingStatusToScreen();
-      }
-      else {
-        holdDieOne = true;
-        writeHoldingStatusToScreen();
-      }
+      holdDieOne = !(holdDieOne)
+      writeHoldingStatusToScreen()
     }
 
     function toggleHoldDieTwo() {
-      if (holdDieTwo) {
-        holdDieTwo = false;
-        writeHoldingStatusToScreen();
-      }
-      else {
-        holdDieTwo = true;
-        writeHoldingStatusToScreen();
-      }
+      holdDieTwo = !(holdDieTwo)
+      writeHoldingStatusToScreen()
     }
 
     function toggleHoldDieThree() {
-      if (holdDieThree) {
-        holdDieThree = false;
-        writeHoldingStatusToScreen();
-      }
-      else {
-        holdDieThree = true;
-        writeHoldingStatusToScreen();
-      }
+      holdDieThree = !(holdDieThree)
+      writeHoldingStatusToScreen()
     }
 
     function toggleHoldDieFour() {
-      if (holdDieFour) {
-        holdDieFour = false;
-        writeHoldingStatusToScreen();
-      }
-      else {
-        holdDieFour = true;
-        writeHoldingStatusToScreen();
-      }
+      holdDieFour = !(holdDieFour)
+      writeHoldingStatusToScreen()
     }
 
     function toggleHoldDieFive() {
-      if (holdDieFive) {
-        holdDieFive = false;
-        writeHoldingStatusToScreen();
-      }
-      else {
-        holdDieFive = true;
-        writeHoldingStatusToScreen();
-      }
+      holdDieFive = !(holdDieFive)
+      writeHoldingStatusToScreen()
     }
 
     function toggleHoldDieSix() {
-      if (holdDieSix) {
-        holdDieSix = false;
-        writeHoldingStatusToScreen();
-      }
-      else {
-        holdDieSix = true;
-        writeHoldingStatusToScreen();
-      }
+      holdDieSix = !(holdDieSix)
+      writeHoldingStatusToScreen()
     }
 
 
     function writeHoldingStatusToScreen() {
-      let holdingStatusText = "Terning 1 ";
-      if (holdDieOne) {
-        holdingStatusText += "holdes.";
-        ydreDivDie1.innerHTML = "<div id=\"die1\" onclick=\"toggleHoldDieOne()\" class=\"diceGreen\"></div>";
-        die1.innerHTML = d1;
-      }
-      else {
-        holdingStatusText += "kastes."
-        ydreDivDie1.innerHTML = "<div id=\"die1\" onclick=\"toggleHoldDieOne()\" class=\"dice\"></div>";
-        die1.innerHTML = d1;
-      }
 
-      holdingStatusText += "<br>Terning 2 ";
-      if (holdDieTwo) {
-        holdingStatusText += "holdes.";
-        ydreDivDie2.innerHTML = "<div id=\"die2\" onclick=\"toggleHoldDieTwo()\" class=\"diceGreen\"></div>";
-        die2.innerHTML = d2;
-      }
-      else {
-        holdingStatusText += "kastes."
-        ydreDivDie2.innerHTML = "<div id=\"die2\" onclick=\"toggleHoldDieTwo()\" class=\"dice\"></div>";
-        die2.innerHTML = d2;
-      }
+      let ydreDivDie1HTML = `<div id=\"die1\" class=\"${holdDieOne ? "diceGreen" : "dice"}\"></div>`
+      ydreDivDie1.setHTML(ydreDivDie1HTML, { sanitizer: sanitizerOne })
 
-      holdingStatusText += "<br>Terning 3 ";
-      if (holdDieThree) {
-        holdingStatusText += "holdes.";
-        ydreDivDie3.innerHTML = "<div id=\"die3\" onclick=\"toggleHoldDieThree()\" class=\"diceGreen\"></div>";
-        die3.innerHTML = d3;
-      }
-      else {
-        holdingStatusText += "kastes."
-        ydreDivDie3.innerHTML = "<div id=\"die3\" onclick=\"toggleHoldDieThree()\" class=\"dice\"></div>";
-        die3.innerHTML = d3;
-      }
+      let ydreDivDie2HTML = `<div id=\"die2\" class=\"${holdDieTwo ? "diceGreen" : "dice"}\"></div>`
+      ydreDivDie2.setHTML(ydreDivDie2HTML, { sanitizer: sanitizerOne })
 
-      holdingStatusText += "<br>Terning 4 ";
-      if (holdDieFour) {
-        holdingStatusText += "holdes.";
-        ydreDivDie4.innerHTML = "<div id=\"die4\" onclick=\"toggleHoldDieFour()\" class=\"diceGreen\"></div>";
-        die4.innerHTML = d4;
-      }
-      else {
-        holdingStatusText += "kastes."
-        ydreDivDie4.innerHTML = "<div id=\"die4\" onclick=\"toggleHoldDieFour()\" class=\"dice\"></div>";
-        die4.innerHTML = d4;
-      }
+      let ydreDivDie3HTML = `<div id=\"die3\" class=\"${holdDieThree ? "diceGreen" : "dice"}\"></div>`
+      ydreDivDie3.setHTML(ydreDivDie3HTML, { sanitizer: sanitizerOne })
 
-      holdingStatusText += "<br>Terning 5 ";
-      if (holdDieFive) {
-        holdingStatusText += "holdes.";
-        ydreDivDie5.innerHTML = "<div id=\"die5\" onclick=\"toggleHoldDieFive()\" class=\"diceGreen\"></div>";
-        die5.innerHTML = d5;
-      }
-      else {
-        holdingStatusText += "kastes."
-        ydreDivDie5.innerHTML = "<div id=\"die5\" onclick=\"toggleHoldDieFive()\" class=\"dice\"></div>";
-        die5.innerHTML = d5;
-      }
+      let ydreDivDie4HTML = `<div id=\"die4\" class=\"${holdDieFour ? "diceGreen" : "dice"}\"></div>`
+      ydreDivDie4.setHTML(ydreDivDie4HTML, { sanitizer: sanitizerOne })
 
-      holdingStatusText += "<br>Terning 6 ";
-      if (holdDieSix) {
-        holdingStatusText += "holdes.";
-        ydreDivDie6.innerHTML = "<div id=\"die6\" onclick=\"toggleHoldDieSix()\" class=\"diceGreen\"></div>";
-        die6.innerHTML = d6;
-      }
-      else {
-        holdingStatusText += "kastes."
-        ydreDivDie6.innerHTML = "<div id=\"die6\" onclick=\"toggleHoldDieSix()\" class=\"dice\"></div>";
-        die6.innerHTML = d6;
-      }
+      let ydreDivDie5HTML = `<div id=\"die5\" class=\"${holdDieFive ? "diceGreen" : "dice"}\"></div>`
+      ydreDivDie5.setHTML(ydreDivDie5HTML, { sanitizer: sanitizerOne })
 
+      let ydreDivDie6HTML = `<div id=\"die6\" class=\"${holdDieSix ? "diceGreen" : "dice"}\"></div>`
+      ydreDivDie6.setHTML(ydreDivDie6HTML, { sanitizer: sanitizerOne })
+
+      updateDiceFaceValues()
     }
 
 
@@ -735,13 +716,6 @@
 
       if (resterendeSlag > 0) {
         resterendeSlag = resterendeSlag - 1;
-
-        let die1 = document.getElementById("die1");
-        let die2 = document.getElementById("die2");
-        let die3 = document.getElementById("die3");
-        let die4 = document.getElementById("die4");
-        let die5 = document.getElementById("die5");
-        let die6 = document.getElementById("die6");
 
         let status = document.getElementById("status");
         let onHoldStatus = document.getElementById("onHoldStatus");
@@ -764,27 +738,26 @@
         if (holdDieSix == false) {
           d6 = Math.floor(Math.random() * 6) + 1;
         }
-        diceArray = [d1, d2, d3, d4, d5, d6];
-        let diceTotal = d1 + d2 + d3 + d4 + d5 + d6;
-        die1.innerHTML = d1;
-        die2.innerHTML = d2;
-        die3.innerHTML = d3;
-        die4.innerHTML = d4;
-        die5.innerHTML = d5;
-        die6.innerHTML = d6;
+
+        diceArray = [d1, d2, d3, d4, d5, d6]
+
+        let diceTotal = d1 + d2 + d3 + d4 + d5 + d6
+
+        updateDiceFaceValues()
 
         // (mini Analyse af resultat)
         if (d1 == d2 && d2 == d3 && d3 == d4 && d4 == d5 && d5 == d6) {
-          status.innerHTML = " Yatzy!!!";
+          status.setHTML(" Yatzy!!!", { sanitizer: sanitizerOne })
         }
         else {
-          status.innerHTML = ""; // Det her virker uden document.getElementById("status").innerHTML fordi "var status erklæres ovenover som document.getElementById("status"); derfor refererer status ikke til id'et, men til document...
+          status.setHTML("", { sanitizer: sanitizerOne }) // Det her virker uden document.getElementById("status").innerHTML fordi "var status erklæres ovenover som document.getElementById("status"); derfor refererer status ikke til id'et, men til document...
         }
       } // TJEK er det her if betingelsen for resterende slag skal gå til ???  
       else {
         toggleHoldAllDice(true);
       }
-      slag.innerHTML = "Slag: " + resterendeSlag;
+
+      slag.setHTML("Slag: " + resterendeSlag, { sanitizer: sanitizerOne })
 
       writeHoldingStatusToScreen();
       countOnesToSixes();
@@ -794,6 +767,14 @@
 
     }  // slut på rollDice
 
+    function updateDiceFaceValues() {
+      die1.setHTML(d1, { sanitizer: sanitizerOne })
+      die2.setHTML(d2, { sanitizer: sanitizerOne })
+      die3.setHTML(d3, { sanitizer: sanitizerOne })
+      die4.setHTML(d4, { sanitizer: sanitizerOne })
+      die5.setHTML(d5, { sanitizer: sanitizerOne })
+      die6.setHTML(d6, { sanitizer: sanitizerOne })
+    }
 
     function resetResultat() {
       resultat.Enere = 0;
@@ -945,489 +926,67 @@
       let spillerensPointTotal = 0;
       let notesblokArray = [];  // burde nok hedde notesblokTekstArray
       let punktTekst = "";
+      let genvejsTastListe = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ",", "+", "-", "l", "s", "r", "h", "c", "y"]
+      kopierTalFraNotesblokTilNotesblokTalArray()
 
-      // Enere:
-      punktTekst = "Enere: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 1)"; }
+      for (let a = 0; a < punktNavneListeMedMellemrum.length; a++) { // array.length
+        if (a == 6) { // Når den når til 6 skal først bonusen håndteres og herefter håndteres Par i samme iteration
+          // Bonus Bemærk på denne måde beregnes en evt bonus hver eneste gang udskriftNotesblok kaldes
+          // Bør denne være en del af notesblok objektet   
+          let EnereTilSeksere = notesblok[aktivSpillerNr].Enere + notesblok[aktivSpillerNr].Toere + notesblok[aktivSpillerNr].Treere + notesblok[aktivSpillerNr].Fireere + notesblok[aktivSpillerNr].Femere + notesblok[aktivSpillerNr].Seksere;
 
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(1)"; }
+          if (EnereTilSeksere >= 84) // Kan også flyttes i egen beregnBonus metode
+          {
+            notesblokArray.push("Bonus: ");
+            notesblok[aktivSpillerNr].Bonus = 50; // Det er måske overflødigt at gemme bonusen
+            notesblokArray.push(notesblok[aktivSpillerNr].Bonus);
+            spillerensPointTotal += 50; // spillerensPointPaaPunkt;  
+            notesblokArray.push("");
+          }
+          else {
 
-      notesblokArray.push(punktTekst);
+            if (notesblok[aktivSpillerNr].Enere > -1 && notesblok[aktivSpillerNr].Toere > -1 && notesblok[aktivSpillerNr].Treere > -1 && notesblok[aktivSpillerNr].Fireere > -1 && notesblok[aktivSpillerNr].Femere > -1 && notesblok[aktivSpillerNr].Seksere > -1) {
+              notesblokArray.push("Bonus: ");
+              notesblokArray.push("0");
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push("I plus eller minus: ");
+              notesblokArray.push(beregnPlusMinusBonus(aktivSpillerNr));  // Dette tredje felt kan bruges til at skrive hvad man er i plus med
+              notesblokArray.push("");
+            }
+          }
+        } // slut på if a == 6 og håndtering af bonus
 
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Enere;
+        punktTekst = punktNavneListeMedMellemrum[a] + ": "
+        if (visGenvejstaster && resterendeSlag > 0) {
+          punktTekst += "(" + shiftKnap + " og " + genvejsTastListe[a] + ")"
+        }
 
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
+        if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(" + genvejsTastListe[a] + ")"; }
 
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(1, "Enere", beregnEnere()));
-      }
+        notesblokArray.push(punktTekst);
 
-      // Toere
-      punktTekst = "Toere: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 2)"; }
+        // notesblokTalArray[i][1] = notesblok[i].Enere;
+        spillerensPointPaaPunkt = notesblokTalArray[aktivSpillerNr][a + 1]
+        //spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Enere;
 
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(2)"; }
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Toere;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(2, "Toere", beregnToere()));
-      }
-
-      // Treere
-      punktTekst = "Treere: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 3)"; }
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(3)"; }
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Treere;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(3, "Treere", beregnTreere()));
-      }
-
-      // Fireere
-      punktTekst = "Fireere: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 4)"; }
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(4)"; }
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Fireere;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(4, "Fireere", beregnFireere()));
-      }
-
-      // Femere
-      punktTekst = "Femere: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 5)"; }
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(5)"; }
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Femere;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(5, "Femere", beregnFemere()));
-      }
-
-      // Seksere
-      punktTekst = "Seksere: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 6)"; }
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(6)"; }
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Seksere;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(6, "Seks'ere", beregnSeksere()));
-      }
-
-
-      // Bonus Bemærk på denne måde beregnes en evt bonus hver eneste gang udskriftNotesblok kaldes
-      // Bør denne være en del af notesblok objektet   
-      let EnereTilSeksere = notesblok[aktivSpillerNr].Enere + notesblok[aktivSpillerNr].Toere + notesblok[aktivSpillerNr].Treere + notesblok[aktivSpillerNr].Fireere + notesblok[aktivSpillerNr].Femere + notesblok[aktivSpillerNr].Seksere;
-
-      if (EnereTilSeksere >= 84) // Kan også flyttes i egen beregnBonus metode
-      {
-        notesblokArray.push("Bonus: ");
-        notesblok[aktivSpillerNr].Bonus = 50; // Det er måske overflødigt at gemme bonusen
-        notesblokArray.push(notesblok[aktivSpillerNr].Bonus);
-        spillerensPointTotal += 50; // spillerensPointPaaPunkt;  
-        notesblokArray.push("");
-      }
-      else {
-
-        if (notesblok[aktivSpillerNr].Enere > -1 && notesblok[aktivSpillerNr].Toere > -1 && notesblok[aktivSpillerNr].Treere > -1 && notesblok[aktivSpillerNr].Fireere > -1 && notesblok[aktivSpillerNr].Femere > -1 && notesblok[aktivSpillerNr].Seksere > -1) {
-          notesblokArray.push("Bonus: ");
-          notesblokArray.push("0");
+        if (spillerensPointPaaPunkt < 0) {
           notesblokArray.push("");
         }
         else {
-          notesblokArray.push("I plus eller minus: ");
-          notesblokArray.push(beregnPlusMinusBonus(aktivSpillerNr));  // Dette tredje felt kan bruges til at skrive hvad man er i plus med
+          notesblokArray.push(spillerensPointPaaPunkt);
+          spillerensPointTotal += spillerensPointPaaPunkt;
+        }
+
+        if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
           notesblokArray.push("");
         }
-      }
-
-
-
-
-
-      // Par
-      punktTekst = "Par: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 7)"; }
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(7)"; }
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Par;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(7, "Par", beregnPar()));
-      }
-
-      // ToPar
-      punktTekst = "To Par: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 8)"; }
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(8)"; }
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].ToPar;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(8, "To Par", beregnToPar()));
-      }
-
-      // TrePar
-      punktTekst = "Tre Par: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 9)"; }
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(9)"; }
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].TrePar;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(9, "Tre Par", beregnTrePar()));
-      }
-
-      // TreEns
-      punktTekst = "Tre Ens: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og ,)"; } // og evt de andre genvejstaster*******
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(,)"; } // og evt de andre genvejstaster*******
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].TreEns;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(10, "Tre Ens", beregnTreEns()));
-      }
-
-      // FireEns
-      punktTekst = "Fire Ens: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og +)"; } // og evt de andre genvejstaster*******
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(+)"; } // og evt de andre genvejstaster*******
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].FireEns;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(11, "Fire Ens", beregnFireEns()));
-      }
-
-      // ToGangeTreEns
-      punktTekst = "ToGangeTreEns: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og -)"; } // og evt de andre genvejstaster*******
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(-)"; } // og evt de andre genvejstaster*******
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].ToGangeTreEns;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(12, "To Gange Tre Ens", beregnToGangeTreEns()));
-      }
-
-      // Lille
-      punktTekst = "Lille: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(l)"; } // og evt de andre genvejstaster*******  " + shiftKnap + " og 
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(l)"; } // og evt de andre genvejstaster*******
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Lille;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(13, "Lille", beregnLille()));
-      }
-
-      // Stor
-      punktTekst = "Stor: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(s)"; } // og evt de andre genvejstaster*******  " + shiftKnap + " og 
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(s)"; } // og evt de andre genvejstaster*******
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Stor;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(14, "Stor", beregnStor()));
-      }
-
-      // Royal
-      punktTekst = "Royal: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(r)"; } // og evt de andre genvejstaster*******  " + shiftKnap + " og 
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(r)"; } // og evt de andre genvejstaster******* hvis der er nogen
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Royal;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(15, "Royal", beregnRoyal()));
-      }
-
-      // Hus
-      punktTekst = "Hus: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(h)"; } // og evt de andre genvejstaster******* /*(" + shiftKnap + "*/ og 
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(h)"; } // og evt de andre genvejstaster*******
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Hus;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(16, "Hus", beregnHus()));
-      }
-
-      // Chancen
-      punktTekst = "Chancen: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(c)"; } // og evt de andre genvejstaster******* /*(" + shiftKnap + "*/ og 
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(c)"; } // og evt de andre genvejstaster*******
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Chancen;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(17, "Chancen", beregnChancen()));
-      }
-
-      // Yatzy
-      punktTekst = "Yatzy: "
-      if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(y)"; } // og evt de andre genvejstaster******* /*(" + shiftKnap + "*/ og 
-
-      if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(y)"; } // og evt de andre genvejstaster*******
-
-      notesblokArray.push(punktTekst);
-
-
-      spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Yatzy;
-
-      if (spillerensPointPaaPunkt < 0) {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(spillerensPointPaaPunkt);
-        spillerensPointTotal += spillerensPointPaaPunkt;
-      }
-      if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) // ***** Bare så det ikke hopper så meget indtil undo knappen implementeres
-
-      {
-        notesblokArray.push("");
-      }
-      else {
-        notesblokArray.push(makeButton(18, "Yatzy", beregnYatzy()));
-      }
+        else {
+          //notesblokArray.push(makeButton(1, "Enere", beregnEnere()))
+          notesblokArray.push(makeButton(a + 1, punktNavneListeMedMellemrum[a], beregnFunktionsListen[a]()));
+        }
+      } // slut på for løkken
 
       // I alt
 
@@ -1441,8 +1000,6 @@
       }
 
       notesblokArray.push(undoInfo.UndoButtonText);
-
-      kopierTalFraNotesblokTilNotesblokTalArray(); // ***** Er det her et godt sted at kalde funktionen???
 
       let j = 1; // j bruges til at nummere punkterne, når spilleren har brug for at rette noget på notesblokken.
 
@@ -1889,14 +1446,15 @@
       spillerenHarIndtastetPoint = false;
       toggleHoldAllDice(false);
       aktivSpillerNr = (aktivSpillerNr + 1) % (antalSpillere);
-      resterendeSlag = antalSlagPrSpiller;
-      slag.innerHTML = "Slag: " + resterendeSlag;
+      resterendeSlag = antalSlagPrSpiller
+      slag.setHTML("Slag: " + resterendeSlag, { sanitizer: sanitizerOne })
       d1 = d2 = d3 = d3 = d4 = d5 = d6 = 0;
       diceArray = [d1, d2, d3, d4, d5, d6];
       resetResultat();
       writeHoldingStatusToScreen();
       undoInfo.UndoButtonText = "";  // dette skulle gerne slette den tidligere spillers fortryd knap
       document.getElementById("status").innerHTML = "";
+      // status.setHTML("", { sanitizer: sanitizerOne }) // det her virker ikke, hvorfor????
       udskrivNotesblok();
       autoSave(); // her skal notesblokAutosave() kaldes
       turnFocusToRollDiceButton();
@@ -1914,11 +1472,13 @@
     function toggleVisTotal() {
       visTotal = !(visTotal);
       if (visTotal) {
-        document.getElementById("visTotalKnappen").innerHTML = "Vis ikke total";
+        //document.getElementById("visTotalKnappen").innerHTML = "Vis ikke total";
+        document.getElementById("visTotalKnappen").setHTML("Vis ikke total", { sanitizer: sanitizerOne })
         udskrivNotesblok();
       }
       else {
-        document.getElementById("visTotalKnappen").innerHTML = "Vis total";
+        //document.getElementById("visTotalKnappen").innerHTML = "Vis total";
+        document.getElementById("visTotalKnappen").setHTML("Vis total", { sanitizer: sanitizerOne })
         udskrivNotesblok();
       }
       turnFocusToRollDiceButton();
@@ -1938,7 +1498,7 @@
     function addRoll()  // Man kunne bekræfte det med at spørge den anden spiller om vedkommende er enig
     {
       resterendeSlag++;
-      slag.innerHTML = "Slag: " + resterendeSlag;
+      slag.setHTML("Slag: " + resterendeSlag, { sanitizer: sanitizerOne })
       turnFocusToRollDiceButton();
     }
 
@@ -2263,15 +1823,9 @@
           resterendeSlag = parseInt(localStorage.getItem("resterendeSlagSpillerNr" + i));
 
           // Bliver det her overskrevet et andet sted eller er det fordi at man er nød til at kaste terningerne før at det kan ses
-          die1.innerHTML = d1;
-          die2.innerHTML = d2;
-          die3.innerHTML = d3;
-          die4.innerHTML = d4;
-          die5.innerHTML = d5;
-          die6.innerHTML = d6;
+          updateDiceFaceValues()
 
-          slag.innerHTML = "Slag: " + resterendeSlag;
-
+          slag.setHTML("Slag: " + resterendeSlag, { sanitizer: sanitizerOne })
         }
 
       }
@@ -2414,107 +1968,6 @@
 
 
   </script>
-</head>
-
-<body onload=loadData()>
-
-  <div id="spilDiven">
-
-    <div id="allDiceDiv" class="prevent-select">
-      <div id="ydreDivDie1">
-        <div id="die1" onclick="toggleHoldDieOne()" class="dice">0</div>
-      </div>
-      <div id="ydreDivDie2">
-        <div id="die2" onclick="toggleHoldDieTwo()" class="dice">0</div>
-      </div>
-      <div id="ydreDivDie3">
-        <div id="die3" onclick="toggleHoldDieThree()" class="dice">0</div>
-      </div>
-      <div id="ydreDivDie4">
-        <div id="die4" onclick="toggleHoldDieFour()" class="dice">0</div>
-      </div>
-      <div id="ydreDivDie5">
-        <div id="die5" onclick="toggleHoldDieFive()" class="dice">0</div>
-      </div>
-      <div id="ydreDivDie6">
-        <div id="die6" onclick="toggleHoldDieSix()" class="dice">0</div>
-      </div>
-    </div>
-
-    <button id="rollDiceButton" onclick="rollDice();this.blur();">Kast terninger</button>
-    <button id="changePlayerButton" onclick="changePlayer()">Giv bæger videre</button>
-    <button id="changePlayerAndRollDiceButton" onclick="changePlayerAndRollDice()">Giv bæger videre og kast</button>
-    <p id="slag">Slag: 3</p>
-
-    <h2 id="status"></h2>
-
-    <h2 id="onHoldStatus" style="clear:left;"></h2>
-
-    <p id="notesblokId"></p>
-
-    <p id="pointFraForm"></p>
-
-
-
-    <button id="visTotalKnappen" onclick="toggleVisTotal()">Vis Total</button>
-
-    <button onclick="toggleButtonDisapear()">Vælg om knapper skal forsvinde efter indtastning</button>
-
-    <button id="tilføjEkstraKastKnappen" onclick="addRoll()">Tilføj ekstra kast</button>
-
-    <button id="retFejlPaaNotesblokButton" onclick="retFejlPaaNotesblok()">Ret På Notesblok</button>
-
-
-    <button id="visGenvejstasterButton" onclick="toggleVisGenvejstaster()">Vis genvejstaster</button>
-
-    <button id="visWebscrapingDataButton" onclick="toggleWebscrapingData()">Vis Webscraping Data</button>
-
-    <button onclick="toggleStartNytSpilMenu()">Start et nyt spil</button>
-
-    <button onclick="goToOtherSite()">Gå til anden side</button>
-
-    <button onclick="changeInputField()">Prepare data for transfer</button>
-
-    <!-- <form action="" method="post">
-      <button name="foo" value="upvote">Upvote</button>
-    </form> -->
-
-    <form action="http://localhost:3000/hello" method="POST">
-      <!-- <form action="" method="POST"></form> -->
-      <!-- <div>
-      <label for="say">What greeting do you want to say?</label>
-      <input name="say" id="say" value="Hi">
-    </div> -->
-      <div>
-        <label for="to">Data to be transfered</label>
-        <textarea name="dataForTransferField" id="dataForTransferField" value="From Yatzy.HTML" rows="4"
-          cols="50"></textarea>
-      </div>
-      <div>
-        <button>Make HTML to be scraped</button>
-      </div>
-    </form>
-
-
-  </div> <!-- Slut på spilDiven -->
-
-  <button id="retNavneOgAntalSpillereButton" onclick="retNavneOgAntalSpillere()">Ret navne og antal spillere</button>
-
-  <div id="fejlRetningsBlokDiven"></div>
-
-  <div id="navneOgAntalSpillerBlokDiven"></div>
-
-  <div id="genvejstasterDiven"></div>
-
-  <div id="webscrapingDiv" class="webscrapingDiv"></div>
-
-  <div id="antalSpillerBlokDiven"></div>
-
-  <div id="navneDiven"></div>
-
-
-  <p id="bugText"></p>
-
 
 </body>
 
