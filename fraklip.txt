@@ -1,0 +1,485 @@
+      /*
+            // Enere:
+            punktTekst = "Enere: "
+            if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 1)"; }
+      
+            if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(1)"; }
+      
+            notesblokArray.push(punktTekst);
+      
+            spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Enere;
+      
+            if (spillerensPointPaaPunkt < 0) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(spillerensPointPaaPunkt);
+              spillerensPointTotal += spillerensPointPaaPunkt;
+            }
+      
+            if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(makeButton(1, "Enere", beregnEnere()));
+            }
+      
+            // Toere
+            punktTekst = "Toere: "
+            if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 2)"; }
+      
+            if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(2)"; }
+      
+            notesblokArray.push(punktTekst);
+      
+      
+            spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Toere;
+      
+            if (spillerensPointPaaPunkt < 0) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(spillerensPointPaaPunkt);
+              spillerensPointTotal += spillerensPointPaaPunkt;
+            }
+            if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(makeButton(2, "Toere", beregnToere()));
+            }
+      
+            // Treere
+            punktTekst = "Treere: "
+            if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 3)"; }
+      
+            if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(3)"; }
+      
+            notesblokArray.push(punktTekst);
+      
+      
+            spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Treere;
+            // spillerensPointPaaPunkt = notesblok[aktivSpillerNr][Treere]; // Virker ikke, hvad kan man gøre i stedet???
+      
+            if (spillerensPointPaaPunkt < 0) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(spillerensPointPaaPunkt);
+              spillerensPointTotal += spillerensPointPaaPunkt;
+            }
+            if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(makeButton(3, "Treere", beregnTreere()));
+            }
+      
+            // Fireere
+            punktTekst = "Fireere: "
+            if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 4)"; }
+      
+            if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(4)"; }
+      
+            notesblokArray.push(punktTekst);
+      
+      
+            spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Fireere;
+      
+            if (spillerensPointPaaPunkt < 0) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(spillerensPointPaaPunkt);
+              spillerensPointTotal += spillerensPointPaaPunkt;
+            }
+            if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(makeButton(4, "Fireere", beregnFireere()));
+            }
+      
+            // Femere
+            punktTekst = "Femere: "
+            if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 5)"; }
+      
+            if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(5)"; }
+      
+            notesblokArray.push(punktTekst);
+      
+      
+            spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Femere;
+      
+            if (spillerensPointPaaPunkt < 0) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(spillerensPointPaaPunkt);
+              spillerensPointTotal += spillerensPointPaaPunkt;
+            }
+            if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(makeButton(5, "Femere", beregnFemere()));
+            }
+      
+            // Seksere
+            punktTekst = "Seksere: "
+            if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 6)"; }
+      
+            if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(6)"; }
+      
+            notesblokArray.push(punktTekst);
+      
+      
+            spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Seksere;
+      
+            if (spillerensPointPaaPunkt < 0) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(spillerensPointPaaPunkt);
+              spillerensPointTotal += spillerensPointPaaPunkt;
+            }
+            if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(makeButton(6, "Seksere", beregnSeksere()));
+            }
+      */
+
+      // // Bonus Bemærk på denne måde beregnes en evt bonus hver eneste gang udskriftNotesblok kaldes
+      // // Bør denne være en del af notesblok objektet   
+      // let EnereTilSeksere = notesblok[aktivSpillerNr].Enere + notesblok[aktivSpillerNr].Toere + notesblok[aktivSpillerNr].Treere + notesblok[aktivSpillerNr].Fireere + notesblok[aktivSpillerNr].Femere + notesblok[aktivSpillerNr].Seksere;
+
+      // if (EnereTilSeksere >= 84) // Kan også flyttes i egen beregnBonus metode
+      // {
+      //   notesblokArray.push("Bonus: ");
+      //   notesblok[aktivSpillerNr].Bonus = 50; // Det er måske overflødigt at gemme bonusen
+      //   notesblokArray.push(notesblok[aktivSpillerNr].Bonus);
+      //   spillerensPointTotal += 50; // spillerensPointPaaPunkt;  
+      //   notesblokArray.push("");
+      // }
+      // else {
+
+      //   if (notesblok[aktivSpillerNr].Enere > -1 && notesblok[aktivSpillerNr].Toere > -1 && notesblok[aktivSpillerNr].Treere > -1 && notesblok[aktivSpillerNr].Fireere > -1 && notesblok[aktivSpillerNr].Femere > -1 && notesblok[aktivSpillerNr].Seksere > -1) {
+      //     notesblokArray.push("Bonus: ");
+      //     notesblokArray.push("0");
+      //     notesblokArray.push("");
+      //   }
+      //   else {
+      //     notesblokArray.push("I plus eller minus: ");
+      //     notesblokArray.push(beregnPlusMinusBonus(aktivSpillerNr));  // Dette tredje felt kan bruges til at skrive hvad man er i plus med
+      //     notesblokArray.push("");
+      //   }
+      // }
+
+
+
+
+      /*
+            // Par
+            punktTekst = "Par: "
+            if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 7)"; }
+      
+            if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(7)"; }
+      
+            notesblokArray.push(punktTekst);
+      
+      
+            spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Par;
+      
+            if (spillerensPointPaaPunkt < 0) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(spillerensPointPaaPunkt);
+              spillerensPointTotal += spillerensPointPaaPunkt;
+            }
+            if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(makeButton(7, "Par", beregnPar()));
+            }
+      
+            // ToPar
+            punktTekst = "To Par: "
+            if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 8)"; }
+      
+            if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(8)"; }
+      
+            notesblokArray.push(punktTekst);
+      
+      
+            spillerensPointPaaPunkt = notesblok[aktivSpillerNr].ToPar;
+      
+            if (spillerensPointPaaPunkt < 0) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(spillerensPointPaaPunkt);
+              spillerensPointTotal += spillerensPointPaaPunkt;
+            }
+            if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(makeButton(8, "To Par", beregnToPar()));
+            }
+      */
+      /*
+            // TrePar
+            punktTekst = "Tre Par: "
+            if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og 9)"; }
+      
+            if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(9)"; }
+      
+            notesblokArray.push(punktTekst);
+      
+      
+            spillerensPointPaaPunkt = notesblok[aktivSpillerNr].TrePar;
+      
+            if (spillerensPointPaaPunkt < 0) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(spillerensPointPaaPunkt);
+              spillerensPointTotal += spillerensPointPaaPunkt;
+            }
+            if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(makeButton(9, "Tre Par", beregnTrePar()));
+            }
+      
+            // TreEns
+            punktTekst = "Tre Ens: "
+            if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og ,)"; } // og evt de andre genvejstaster*******
+      
+            if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(,)"; } // og evt de andre genvejstaster*******
+      
+            notesblokArray.push(punktTekst);
+      
+      
+            spillerensPointPaaPunkt = notesblok[aktivSpillerNr].TreEns;
+      
+            if (spillerensPointPaaPunkt < 0) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(spillerensPointPaaPunkt);
+              spillerensPointTotal += spillerensPointPaaPunkt;
+            }
+            if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(makeButton(10, "Tre Ens", beregnTreEns()));
+            }
+      
+            // FireEns
+            punktTekst = "Fire Ens: "
+            if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og +)"; } // og evt de andre genvejstaster*******
+      
+            if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(+)"; } // og evt de andre genvejstaster*******
+      
+            notesblokArray.push(punktTekst);
+      
+      
+            spillerensPointPaaPunkt = notesblok[aktivSpillerNr].FireEns;
+      
+            if (spillerensPointPaaPunkt < 0) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(spillerensPointPaaPunkt);
+              spillerensPointTotal += spillerensPointPaaPunkt;
+            }
+            if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(makeButton(11, "Fire Ens", beregnFireEns()));
+            }
+      
+            // ToGangeTreEns
+            punktTekst = "ToGangeTreEns: "
+            if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(" + shiftKnap + " og -)"; } // og evt de andre genvejstaster*******
+      
+            if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(-)"; } // og evt de andre genvejstaster*******
+      
+            notesblokArray.push(punktTekst);
+      
+      
+            spillerensPointPaaPunkt = notesblok[aktivSpillerNr].ToGangeTreEns;
+      
+            if (spillerensPointPaaPunkt < 0) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(spillerensPointPaaPunkt);
+              spillerensPointTotal += spillerensPointPaaPunkt;
+            }
+            if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+              notesblokArray.push("");
+            }
+            else {
+              notesblokArray.push(makeButton(12, "To Gange Tre Ens", beregnToGangeTreEns()));
+            }
+      */
+      // // Lille
+      // punktTekst = "Lille: "
+      // if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(l)"; } // og evt de andre genvejstaster*******  " + shiftKnap + " og 
+
+      // if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(l)"; } // og evt de andre genvejstaster*******
+
+      // notesblokArray.push(punktTekst);
+
+
+      // spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Lille;
+
+      // if (spillerensPointPaaPunkt < 0) {
+      //   notesblokArray.push("");
+      // }
+      // else {
+      //   notesblokArray.push(spillerensPointPaaPunkt);
+      //   spillerensPointTotal += spillerensPointPaaPunkt;
+      // }
+      // if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+      //   notesblokArray.push("");
+      // }
+      // else {
+      //   notesblokArray.push(makeButton(13, "Lille", beregnLille()));
+      // }
+
+      // // Stor
+      // punktTekst = "Stor: "
+      // if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(s)"; } // og evt de andre genvejstaster*******  " + shiftKnap + " og 
+
+      // if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(s)"; } // og evt de andre genvejstaster*******
+
+      // notesblokArray.push(punktTekst);
+
+
+      // spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Stor;
+
+      // if (spillerensPointPaaPunkt < 0) {
+      //   notesblokArray.push("");
+      // }
+      // else {
+      //   notesblokArray.push(spillerensPointPaaPunkt);
+      //   spillerensPointTotal += spillerensPointPaaPunkt;
+      // }
+      // if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+      //   notesblokArray.push("");
+      // }
+      // else {
+      //   notesblokArray.push(makeButton(14, "Stor", beregnStor()));
+      // }
+
+      // // Royal
+      // punktTekst = "Royal: "
+      // if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(r)"; } // og evt de andre genvejstaster*******  " + shiftKnap + " og 
+
+      // if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(r)"; } // og evt de andre genvejstaster******* hvis der er nogen
+
+      // notesblokArray.push(punktTekst);
+
+
+      // spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Royal;
+
+      // if (spillerensPointPaaPunkt < 0) {
+      //   notesblokArray.push("");
+      // }
+      // else {
+      //   notesblokArray.push(spillerensPointPaaPunkt);
+      //   spillerensPointTotal += spillerensPointPaaPunkt;
+      // }
+      // if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+      //   notesblokArray.push("");
+      // }
+      // else {
+      //   notesblokArray.push(makeButton(15, "Royal", beregnRoyal()));
+      // }
+
+      // // Hus
+      // punktTekst = "Hus: "
+      // if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(h)"; } // og evt de andre genvejstaster******* /*(" + shiftKnap + "*/ og 
+
+      // if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(h)"; } // og evt de andre genvejstaster*******
+
+      // notesblokArray.push(punktTekst);
+
+
+      // spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Hus;
+
+      // if (spillerensPointPaaPunkt < 0) {
+      //   notesblokArray.push("");
+      // }
+      // else {
+      //   notesblokArray.push(spillerensPointPaaPunkt);
+      //   spillerensPointTotal += spillerensPointPaaPunkt;
+      // }
+      // if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+      //   notesblokArray.push("");
+      // }
+      // else {
+      //   notesblokArray.push(makeButton(16, "Hus", beregnHus()));
+      // }
+
+      // // Chancen
+      // punktTekst = "Chancen: "
+      // if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(c)"; } // og evt de andre genvejstaster******* /*(" + shiftKnap + "*/ og 
+
+      // if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(c)"; } // og evt de andre genvejstaster*******
+
+      // notesblokArray.push(punktTekst);
+
+
+      // spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Chancen;
+
+      // if (spillerensPointPaaPunkt < 0) {
+      //   notesblokArray.push("");
+      // }
+      // else {
+      //   notesblokArray.push(spillerensPointPaaPunkt);
+      //   spillerensPointTotal += spillerensPointPaaPunkt;
+      // }
+      // if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) {
+      //   notesblokArray.push("");
+      // }
+      // else {
+      //   notesblokArray.push(makeButton(17, "Chancen", beregnChancen()));
+      // }
+
+      // // Yatzy
+      // punktTekst = "Yatzy: "
+      // if (visGenvejstaster && resterendeSlag > 0) { punktTekst += "(y)"; } // og evt de andre genvejstaster******* /*(" + shiftKnap + "*/ og 
+
+      // if (visGenvejstaster && resterendeSlag == 0) { punktTekst += "(y)"; } // og evt de andre genvejstaster*******
+
+      // notesblokArray.push(punktTekst);
+
+
+      // spillerensPointPaaPunkt = notesblok[aktivSpillerNr].Yatzy;
+
+      // if (spillerensPointPaaPunkt < 0) {
+      //   notesblokArray.push("");
+      // }
+      // else {
+      //   notesblokArray.push(spillerensPointPaaPunkt);
+      //   spillerensPointTotal += spillerensPointPaaPunkt;
+      // }
+      // if ((spillerensPointPaaPunkt >= 0 || spillerenHarIndtastetPoint) && knapperSkalForsvindeEfterIndtastning) // ***** Bare så det ikke hopper så meget indtil undo knappen implementeres
+
+      // {
+      //   notesblokArray.push("");
+      // }
+      // else {
+      //   notesblokArray.push(makeButton(18, "Yatzy", beregnYatzy()));
+      // }
